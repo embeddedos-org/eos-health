@@ -1,0 +1,70 @@
+# Node.js
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+.expo/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Build artifacts
+*.o
+*.a
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.d
+
+# KiCad
+*.kicad_prl
+*-backups/
+fp-info-cache
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig

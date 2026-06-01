@@ -1,0 +1,41 @@
+{
+  "name": "EoS Health",
+  "short_name": "EoS Health",
+  "description": "Companion app for HEALTH-KEY ULTRA and HEALTH-BAND Neuro devices",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080C12",
+  "theme_color": "#00D4AA",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "fitness"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View live health metrics",
+      "url": "/app/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Breath Test",
+      "short_name": "Breath Test",
+      "description": "Run a BAC/VOC breath test",
+      "url": "/app/breath-test",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
