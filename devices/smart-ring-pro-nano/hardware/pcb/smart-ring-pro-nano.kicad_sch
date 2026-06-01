@@ -1,0 +1,174 @@
+(kicad_sch
+  (version 20231120)
+  (generator "EoS Health Design Team")
+  (generator_version "1.0.0")
+  (paper "A4")
+  (title_block
+    (title "Smart Ring Pro Nano — Main PCB Schematic")
+    (date "2026-06-01")
+    (rev "A")
+    (company "Embedded Operating Systems Research Foundation")
+    (comment 1 "Inventor: Srikanth Patchava")
+    (comment 2 "Patent Pending — Novel claims: ZPIES, SDMSM, KEHS")
+    (comment 3 "EIN: 41-4821627")
+    (comment 4 "4-layer flex PCB, 0.15 mm total thickness, polyimide substrate")
+  )
+
+  ;; ============================================================
+  ;; POWER RAILS
+  ;; VBAT  = 3.7V (LiPo battery)
+  ;; VDD   = 1.8V (nRF52833 core)
+  ;; VDDIO = 3.0V (I/O and sensors)
+  ;; VHARVEST = rectified piezo output (0.5–3.0V, boost to 3.7V)
+  ;; ============================================================
+
+  ;; ============================================================
+  ;; U1 — Nordic nRF52833 (Main MCU + BLE 5.1)
+  ;; Package: QFN-73, 7×7 mm (same footprint as nRF52840)
+  ;; ============================================================
+  ;; Connections:
+  ;; VDD (pin 1,2,3)        → VDD rail (1.8V)
+  ;; VDDIO (pin 4,5,6)      → VDDIO rail (3.0V)
+  ;; GND (pin 7,8,9,10)     → GND
+  ;; P0.00 / XL1            → 32.768 kHz crystal X1 pin 1
+  ;; P0.01 / XL2            → 32.768 kHz crystal X1 pin 2
+  ;; P0.06                  → SPI_CLK (MAX30101, MAX30001)
+  ;; P0.07                  → SPI_MOSI
+  ;; P0.08                  → SPI_MISO
+  ;; P0.09                  → CS_PPG (MAX30101)
+  ;; P0.10                  → CS_ECG (MAX30001)
+  ;; P0.11                  → INT_PPG (MAX30101 interrupt)
+  ;; P0.12                  → INT_ECG (MAX30001 interrupt)
+  ;; P0.13                  → I2C_SCL (MAX30208, LSM6DSO)
+  ;; P0.14                  → I2C_SDA
+  ;; P0.15                  → INT_IMU (LSM6DSO interrupt)
+  ;; P0.16                  → INT_TEMP (MAX30208 interrupt)
+  ;; P0.17                  → UART_TX (debug)
+  ;; P0.18                  → UART_RX (debug)
+  ;; P0.23                  → HAPTIC_EN (haptic motor, optional)
+  ;; P0.24                  → NFC_AN1 (NFC antenna)
+  ;; P0.25                  → NFC_AN2 (NFC antenna)
+  ;; P0.26                  → PMIC_INT (MAX77734 interrupt)
+  ;; P0.27                  → PMIC_EN
+  ;; P0.28 (AIN4)           → VBAT_SENSE (battery voltage divider)
+  ;; P0.29 (AIN5)           → HARVEST_SENSE (energy harvest voltage)
+  ;; P0.04 (AIN2)           → ECG electrode E1 (GSR channel 1)
+  ;; P0.05 (AIN3)           → ECG electrode E2 (GSR channel 2)
+  ;; DECAP: 100nF + 10µF on each VDD/VDDIO pin
+
+  ;; ============================================================
+  ;; U2 — Maxim MAX30101 (PPG AFE, 3-wavelength)
+  ;; Package: WLP-14, 1.8×1.8 mm
+  ;; ============================================================
+  ;; Connections:
+  ;; AVDD (pin 1)           → VDDIO rail (3.0V) via 10Ω ferrite
+  ;; DVDD (pin 2)           → VDDIO rail (3.0V)
+  ;; GND (pin 3)            → GND
+  ;; SCLK (pin 4)           → nRF52833 P0.06
+  ;; MOSI (pin 5)           → nRF52833 P0.07
+  ;; MISO (pin 6)           → nRF52833 P0.08
+  ;; CS (pin 7)             → nRF52833 P0.09
+  ;; INT (pin 8)            → nRF52833 P0.11
+  ;; LED_DRV1 (pin 9)       → LED1 660nm (cathode)
+  ;; LED_DRV2 (pin 10)      → LED2 880nm (cathode)
+  ;; LED_DRV3 (pin 11)      → LED3 940nm (cathode)
+  ;; PD1 (pin 12)           → Photodetector PD1 anode
+  ;; DECAP: 100nF + 10µF on AVDD; 100nF on DVDD
+
+  ;; ============================================================
+  ;; U3 — Maxim MAX30001 (ECG AFE, ultra-low power)
+  ;; Package: WLP-16, 1.6×1.6 mm
+  ;; ============================================================
+  ;; Connections:
+  ;; AVDD (pin 1)           → VDDIO rail (3.0V) via 10Ω ferrite
+  ;; DVDD (pin 2)           → VDDIO rail (3.0V)
+  ;; GND (pin 3)            → GND
+  ;; SCLK (pin 4)           → nRF52833 P0.06
+  ;; MOSI (pin 5)           → nRF52833 P0.07
+  ;; MISO (pin 6)           → nRF52833 P0.08
+  ;; CS (pin 7)             → nRF52833 P0.10
+  ;; INT (pin 8)            → nRF52833 P0.12
+  ;; ECGP (pin 9)           → ECG electrode E1 (via 1MΩ + 4.7nF ESD)
+  ;; ECGN (pin 10)          → ECG electrode E2 (via 1MΩ + 4.7nF ESD)
+  ;; RBIAS (pin 11)         → 196kΩ to GND
+  ;; DECAP: 100nF + 4.7µF on AVDD; 100nF on DVDD
+
+  ;; ============================================================
+  ;; U4 — Maxim MAX30208 (Temperature Sensor)
+  ;; Package: WLP-9, 1.0×1.0 mm
+  ;; ============================================================
+  ;; (same connections as Smart Ring Pro Ultra — see Ultra schematic)
+
+  ;; ============================================================
+  ;; U5 — ST LSM6DSO (6-axis IMU, low-power variant)
+  ;; Package: LGA-14L, 2.5×3.0 mm
+  ;; ============================================================
+  ;; (same I2C connections as Smart Ring Pro Ultra — see Ultra schematic)
+
+  ;; ============================================================
+  ;; U6 — Maxim MAX77734 (PMIC)
+  ;; Package: WLP-16, 1.6×1.6 mm
+  ;; ============================================================
+  ;; (same connections as Smart Ring Pro Ultra — see Ultra schematic)
+  ;; Additional: CHGIN2 → Piezo boost converter output (VHARVEST)
+
+  ;; ============================================================
+  ;; B1 — Cymbet CBC030 (15 mAh Solid-State LiPo)
+  ;; Package: Custom thin-film, 10×8×0.2 mm
+  ;; ============================================================
+  ;; BATT+ → MAX77734 BATT pin
+  ;; BATT- → GND
+
+  ;; ============================================================
+  ;; L1 — TDK WCT-0501 (NFC Charging Coil, compact)
+  ;; Resonant frequency: 13.56 MHz
+  ;; ============================================================
+  ;; COIL1 → nRF52833 NFC_AN1 (P0.24) + MAX77734 CHGIN (via rectifier)
+  ;; COIL2 → nRF52833 NFC_AN2 (P0.25) + GND
+
+  ;; ============================================================
+  ;; PZ1 — Mide V21BL (Piezoelectric Energy Harvester)
+  ;; MEMS cantilever, 3.0×2.0×0.5 mm
+  ;; ============================================================
+  ;; PIEZO+ → Full-wave rectifier (4× PMEG2010AEA)
+  ;; PIEZO- → GND
+  ;; Rectifier output → Boost converter (TI TPS61099) → VHARVEST (3.7V)
+  ;; VHARVEST → MAX77734 CHGIN2
+
+  ;; ============================================================
+  ;; E1, E2 — Gold Arc Electrodes (photolithographic, flush-surface)
+  ;; Custom part: EOS-AU-01
+  ;; ============================================================
+  ;; E1 → MAX30001 ECGP + nRF52833 AIN2 (GSR channel 1)
+  ;; E2 → MAX30001 ECGN + nRF52833 AIN3 (GSR channel 2)
+  ;; ESD protection: 4.7nF + 1MΩ on each electrode line
+
+  ;; ============================================================
+  ;; LED1–3 — 3-wavelength LED Array (Osram SFH7050 subset)
+  ;; ============================================================
+  ;; LED1 (660nm):  Anode → VDDIO via 22Ω; Cathode → MAX30101 LED_DRV1
+  ;; LED2 (880nm):  Anode → VDDIO via 22Ω; Cathode → MAX30101 LED_DRV2
+  ;; LED3 (940nm):  Anode → VDDIO via 22Ω; Cathode → MAX30101 LED_DRV3
+
+  ;; ============================================================
+  ;; PD1 — Photodetector (Hamamatsu S13773)
+  ;; ============================================================
+  ;; PD1 Anode → MAX30101 PD1; Cathode → GND
+
+  ;; ============================================================
+  ;; X1 — 32.768 kHz Crystal (RTC)
+  ;; ============================================================
+  ;; Pin 1 → nRF52833 XL1 (P0.00) via 12pF to GND
+  ;; Pin 2 → nRF52833 XL2 (P0.01) via 12pF to GND
+
+  ;; ============================================================
+  ;; J1 — Debug/Programming Header (Test pads, 0.5mm pitch)
+  ;; ============================================================
+  ;; Pin 1: VDD
+  ;; Pin 2: GND
+  ;; Pin 3: SWDIO (nRF52833)
+  ;; Pin 4: SWDCLK (nRF52833)
+  ;; Pin 5: UART_TX
+  ;; Pin 6: UART_RX
+
+)

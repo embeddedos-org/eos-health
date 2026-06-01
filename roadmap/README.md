@@ -10,7 +10,7 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 |---|---|---|
 | **Phase 1 — Foundation** | 2026 Q1–Q2 | Patent filings, hardware V1 prototypes, mono-repo |
 | **Phase 2 — MVP** | 2026 Q3–Q4 | HEALTH-KEY ULTRA + HEALTH-BAND Neuro production units |
-| **Phase 3 — Expansion** | 2027 Q1–Q2 | Smart Ring Pro + Smart Patch Pro V1, non-provisional patents |
+| **Phase 3 — Expansion** | 2027 Q1–Q2 | Smart Ring Pro Ultra/Nano + Smart Patch Pro Ultra Nano V1, non-provisional patents |
 | **Phase 4 — Intelligence** | 2027 Q3–Q4 | AI digital twin, doctor dashboard, CIP filings |
 | **Phase 5 — Scale** | 2028+ | FDA clearance, clinical trials, mass production |
 
@@ -32,6 +32,11 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 - [ ] HEALTH-BAND Neuro V1 PCB prototype fabrication (JLCPCB)
 - [ ] Zenodo academic record submission for both devices
 - [ ] TechRxiv (IEEE) journal paper submission
+
+### New (2026 Q2 — Completed)
+- [x] Smart Ring Pro Ultra — hardware design, KiCad schematic, BOM, firmware arch, patent application (EOS-2026-003)
+- [x] Smart Ring Pro Nano — hardware design, KiCad schematic, BOM, firmware arch, patent application (EOS-2026-004)
+- [x] Smart Patch Pro Ultra Nano — hardware design, KiCad schematic, BOM, firmware arch, patent application (EOS-2026-005)
 
 ---
 
@@ -68,21 +73,24 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 ## Phase 3 — Expansion (2027 Q1–Q2)
 
 ### Patents
-- [ ] HEALTH-KEY ULTRA non-provisional patent filed (deadline: May 23, 2027)
-- [ ] HEALTH-BAND Neuro non-provisional patent filed (deadline: May 27, 2027)
-- [ ] Smart Ring Pro provisional patent filed
-- [ ] Smart Patch Pro provisional patent filed
+- [ ] HEALTH-KEY ULTRA non-provisional patent filed (deadline: **May 23, 2027**)
+- [ ] HEALTH-BAND Neuro non-provisional patent filed (deadline: **May 27, 2027**)
+- [ ] Smart Ring Pro Ultra non-provisional patent filed (EOS-2026-003)
+- [ ] Smart Ring Pro Nano non-provisional patent filed (EOS-2026-004)
+- [ ] Smart Patch Pro Ultra Nano non-provisional patent filed (EOS-2026-005)
 
 ### Hardware
-- [ ] Smart Ring Pro V1 prototype
-- [ ] Smart Patch Pro V1 prototype (CGM + electrolytes)
-- [ ] Smart Patch Pro cartridge system V1
+- [ ] Smart Ring Pro Ultra V1 prototype (Ti Grade 23, 2.8mm, DAEA + MSHE + PPTT)
+- [ ] Smart Ring Pro Nano V1 prototype (Ti Grade 23, 2.0mm, ZPIES + SDMSM + KEHS)
+- [ ] Smart Patch Pro Ultra Nano V1 prototype (35×25mm, NEBA + DMSA + SCBN, 14-day)
+- [ ] Smart Ring Pro (base model) V1 prototype
 
 ### Mobile App
-- [ ] Smart Ring Pro integration (sleep stages, HRV)
-- [ ] Smart Patch Pro integration (glucose, electrolytes)
+- [ ] Smart Ring Pro Ultra integration (ECG, HbA1c, BP, sleep, stress)
+- [ ] Smart Ring Pro Nano integration (HR, SpO₂, sleep, steps)
+- [ ] Smart Patch Pro Ultra Nano integration (glucose, lactate, cortisol, electrolytes, pH)
 - [ ] AI food camera (nutrition tracking)
-- [ ] Digital twin health score (all 4 devices)
+- [ ] Digital twin health score (all 6 devices)
 
 ---
 
@@ -97,6 +105,9 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 ### Patents
 - [ ] HEALTH-KEY ULTRA CIP filed (i.MX RT700 upgrade)
 - [ ] HEALTH-BAND Neuro CIP filed (16-channel sEMG + EEG)
+- [ ] Smart Ring Pro Ultra CIP filed (holographic micro-LED display)
+- [ ] Smart Ring Pro Nano CIP filed (custom ASIC integration)
+- [ ] Smart Patch Pro Ultra Nano CIP filed (multi-analyte ASIC)
 
 ### EB-1A
 - [ ] EB-1A Form I-140 self-petition filed
@@ -109,15 +120,17 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 ### Regulatory
 - [ ] FDA 510(k) clearance for HEALTH-KEY ULTRA (ECG + SpO₂)
 - [ ] FDA 510(k) clearance for HEALTH-BAND Neuro (sEMG + TENS)
-- [ ] FDA De Novo for Smart Patch Pro (CGM)
-- [ ] CE marking (EU market)
+- [ ] FDA 510(k) clearance for Smart Ring Pro Ultra (ECG + SpO₂ + BP)
+- [ ] FDA De Novo for Smart Patch Pro Ultra Nano (multi-analyte CGM)
+- [ ] CE marking (EU market, all 6 devices)
 
 ### Production
 - [ ] Mass production partner selected
 - [ ] HEALTH-KEY ULTRA: 10,000 unit initial run
 - [ ] HEALTH-BAND Neuro: 10,000 unit initial run
-- [ ] Smart Ring Pro: 5,000 unit initial run
-- [ ] Smart Patch Pro: 5,000 unit initial run
+- [ ] Smart Ring Pro Ultra: 5,000 unit initial run ($399)
+- [ ] Smart Ring Pro Nano: 5,000 unit initial run ($199)
+- [ ] Smart Patch Pro Ultra Nano: 50,000 unit initial run ($89/patch)
 
 ### Business
 - [ ] Series A funding round
@@ -135,6 +148,10 @@ This document describes the 5-phase roadmap for the entire EoS Health ecosystem,
 | May 27, 2026 | HEALTH-BAND Neuro provisional filed |
 | **May 23, 2027** | **HEALTH-KEY ULTRA non-provisional deadline** |
 | **May 27, 2027** | **HEALTH-BAND Neuro non-provisional deadline** |
-| 2027 Q1 | Smart Ring Pro + Smart Patch Pro provisionals |
-| 2027 Q3 | CIP filings (both devices) |
+| 2026 Q2 | Smart Ring Pro Ultra, Nano + Smart Patch Pro Ultra Nano designs complete |
+| **2026 Q3** | **Smart Ring Pro Ultra, Nano + Smart Patch Pro Ultra Nano provisionals target** |
+| **May 23, 2027** | **HEALTH-KEY ULTRA non-provisional deadline** |
+| **May 27, 2027** | **HEALTH-BAND Neuro non-provisional deadline** |
+| 2027 Q1 | Smart Ring Pro Ultra/Nano + Smart Patch Pro Ultra Nano non-provisionals |
+| 2027 Q3 | CIP filings (all 5 devices) |
 | 2028 Q1 | FDA 510(k) submissions |
