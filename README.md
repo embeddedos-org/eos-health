@@ -14,14 +14,14 @@ Together, these four devices cover **~95% of all clinically relevant health metr
 |---|---|---|---|
 | [**HEALTH-KEY ULTRA**](devices/health-key-ultra/) | USB-C pendrive | ECG, SpO₂, BAC breath, HR, temp, UV, IMU, USB-C pass-through | ✅ Patent Pending — 64/073,334 |
 | [**HEALTH-BAND Neuro**](devices/health-band-neuro/) | Wristband | sEMG gesture control, TENS therapy, BAC breath, ECG, SpO₂, HR | ✅ Patent Pending — 64/076,078 |
-| [**Smart Ring Pro**](devices/smart-ring-pro/) | Titanium finger ring | HR, HRV, SpO₂, sleep stages, ketones, steps, stress score | 🔬 Research phase |
-| [**Smart Patch Pro**](devices/smart-patch-pro/) | Flexible upper-arm patch | CGM glucose, electrolytes, hydration, pH, lactate, monthly blood labs | 🔬 Research phase |
+| [**HEALTH-RING**](devices/health-ring/) | Titanium finger ring | ECG (AFib), SpO₂, HbA1c, cuffless BP, HRV, sleep stages, stress | 📋 Provisional target: 2026 Q3 — EOS-2026-003 |
+| [**HEALTH-LAB**](devices/health-lab/) | Flexible biosensor patch | Glucose, lactate, cortisol, Na⁺, K⁺, uric acid, pH — 14-day wear | 📋 Provisional target: 2026 Q3 — EOS-2026-004 |
 
 ```
 HEALTH-KEY ULTRA ──┐
 HEALTH-BAND Neuro ──┤── BLE 5.3 / USB-C ──► Single Health Hub App
-Smart Ring Pro ────┤                              │
-Smart Patch Pro ───┘                    ┌─────────┴──────────┐
+HEALTH-RING ───────┤                              │
+HEALTH-LAB ────────┘                    ┌─────────┴──────────┐
                                         │  Digital Twin       │
                                         │  AI Food Camera     │
                                         │  Doctor Dashboard   │
@@ -54,15 +54,17 @@ eos-health/
 │   │   ├── eb1a/                  ← EB-1A evidence master documents
 │   │   └── PATENT_STATUS.md       ← Official filing status
 │   │
-│   ├── smart-ring-pro/            ← Smart Ring Pro (eHealth365)
-│   │   ├── hardware/              ← Flex PCB, KiCad schematic, BOM, 3D models
-│   │   ├── firmware/              ← nRF52840 ring firmware
-│   │   └── docs/                  ← Sensing strategy, battery, data architecture
+│   ├── health-ring/               ← HEALTH-RING (base + Ultra tiers)
+│   │   ├── hardware/              ← Flex PCB (KiCad), BOM, architecture docs
+│   │   ├── firmware/              ← nRF52833/nRF52840 ring firmware (eBuild)
+│   │   ├── patent/                ← Provisional patent EOS-2026-003
+│   │   └── PATENT_STATUS.md       ← Filing status + prior art differentiation
 │   │
-│   └── smart-patch-pro/           ← Smart Patch Pro (eHealth365)
-│       ├── hardware/              ← Flexible PCB, cartridge interface, BOM
-│       ├── firmware/              ← Patch MCU firmware
-│       └── docs/                  ← CGM strategy, electrolyte sensing, 24hr pattern
+│   └── health-lab/                ← HEALTH-LAB wearable biosensor patch (base + Ultra)
+│       ├── hardware/              ← Flex PCB (KiCad), NEBA electrode array, BOM
+│       ├── firmware/              ← nRF52833/nRF52840 patch firmware (eBuild)
+│       ├── patent/                ← Provisional patent EOS-2026-004
+│       └── PATENT_STATUS.md       ← Filing status + prior art differentiation
 │
 ├── apps/
 │   ├── mobile/                    ← Single Health Hub — React Native (iOS + Android)
@@ -82,8 +84,8 @@ eos-health/
 │   │   └── ebuild/                ← eBuild toolchain configuration
 │   ├── health-key-ultra/          ← Device-specific firmware config
 │   ├── health-band-neuro/         ← Device-specific firmware config
-│   ├── smart-ring-pro/            ← Device-specific firmware config
-│   └── smart-patch-pro/           ← Device-specific firmware config
+│   ├── health-ring/               ← Device-specific firmware config
+│   └── health-lab/                ← Device-specific firmware config
 │
 ├── academic/                      ← Shared academic publications
 │   ├── journal/                   ← IEEE JBHI journal papers
@@ -118,8 +120,10 @@ eos-health/
 |---|---|---|---|---|
 | **HEALTH-KEY ULTRA** | 64/073,334 | May 23, 2026 | May 23, 2026 | **May 23, 2027** |
 | **HEALTH-BAND Neuro** | 64/076,078 | May 27, 2026 | May 27, 2026 | **May 27, 2027** |
+| **HEALTH-RING** | EOS-2026-003 | 2026 Q3 (target) | 2026 Q3 | 2027 Q3 |
+| **HEALTH-LAB** | EOS-2026-004 | 2026 Q3 (target) | 2026 Q3 | 2027 Q3 |
 
-Both applications filed by **Srikanth Patchava** (individual inventor) with affiliation to the **Embedded Operating Systems Research Foundation**. Entity status: Micro Entity.
+All applications filed by **Srikanth Patchava** (individual inventor) with affiliation to the **Embedded Operating Systems Research Foundation**. Entity status: Micro Entity.
 
 ---
 
@@ -150,9 +154,9 @@ The mobile app (`apps/mobile/`) is a **single React Native application** that co
 | BAC breath analysis | HEALTH-KEY ULTRA or HEALTH-BAND Neuro |
 | Gesture control (TV, phone, smart home) | HEALTH-BAND Neuro |
 | TENS therapy sessions | HEALTH-BAND Neuro |
-| Sleep stages + HRV | Smart Ring Pro |
-| Blood glucose (CGM) | Smart Patch Pro |
-| Electrolytes + hydration | Smart Patch Pro |
+| Sleep stages + HRV | HEALTH-RING |
+| Blood glucose (CGM) | HEALTH-LAB |
+| Electrolytes + hydration | HEALTH-LAB |
 | AI food camera + nutrition | App (camera) |
 | Digital twin health score | All devices combined |
 | Doctor dashboard sharing | All devices combined |
@@ -208,7 +212,7 @@ The `eb1a/` folder contains a complete evidence portfolio for the EB-1A self-pet
 |---|---|
 | [HealthKey-Ulta](https://github.com/embeddedos-org/HealthKey-Ulta) | HEALTH-KEY ULTRA — original device repo (patent history preserved) |
 | [HEALTH-BAND-Neuro](https://github.com/embeddedos-org/HEALTH-BAND-Neuro) | HEALTH-BAND Neuro — original device repo (patent history preserved) |
-| [eCAD-Hardware-Products](https://github.com/embeddedos-org/eCAD-Hardware-Products) | Smart Ring Pro + Smart Patch Pro CAD designs |
+| [eCAD-Hardware-Products](https://github.com/embeddedos-org/eCAD-Hardware-Products) | Legacy CAD designs (superseded by health-ring/ and health-lab/ in this repo) |
 | [embeddedos-org.github.io](https://github.com/embeddedos-org/embeddedos-org.github.io) | Company website |
 
 ---
