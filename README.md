@@ -198,6 +198,28 @@ All papers are ready to submit. See `academic/` for full documents.
 
 ---
 
+## Regulatory Compliance
+
+The `regulatory/` directory contains the complete regulatory compliance package for all four devices across seven frameworks. All documentation is submission-ready; physical testing and formal submissions are the next steps.
+
+| Framework | Documents | Status |
+|---|---|---|
+| **FDA** | 510(k) pre-submissions (KEY ULTRA, BAND Neuro); De Novo packages (RING, LAB) | ✅ Documentation complete |
+| **FCC** | Part 15 §15.247 authorization checklist for all 4 BLE devices | ✅ Documentation complete |
+| **HIPAA** | Risk analysis, BAA template, privacy notice, breach response plan | ✅ Documentation complete |
+| **FTC** | Health claim substantiation matrix, required disclaimers, marketing review | ✅ Documentation complete |
+| **NIST CSF 2.0** | Full GV/ID/PR/DE/RS/RC control mapping, SBOM, FDA 2023 alignment | ✅ Documentation complete |
+| **ISO 13485** | QMS procedures, risk management, CAPA, design controls | ✅ Documentation complete |
+| **IEC 60601** | Safety testing checklist (-1, -1-2 EMC, -1-6 usability, -1-11 home, -2-10 TENS) | ✅ Documentation complete |
+| **Clinical Validation** | IRB protocols, ClinicalTrials.gov registration, 10 study SOPs, SAP templates | ✅ Documentation complete |
+
+**Estimated total regulatory investment:** $1.8M–$4.5M across all 4 devices  
+**Critical path to first commercial sale:** 18–24 months (HEALTH-KEY ULTRA via 510(k))
+
+See [`regulatory/master/MASTER_REGULATORY_SUBMISSION_CHECKLIST.md`](regulatory/master/MASTER_REGULATORY_SUBMISSION_CHECKLIST.md) for the consolidated timeline, cost estimates, and critical path analysis.
+
+---
+
 ## EB-1A Extraordinary Ability Visa
 
 The `eb1a/` folder contains a complete evidence portfolio for the EB-1A self-petition (Form I-140). See [eb1a/README.md](eb1a/README.md) for the criteria status table and action plan.

@@ -2,11 +2,11 @@
 
 **Version:** 2.0 | **Updated:** June 2026
 
-This document tracks the maturity of all four EoS Health products across all six production pillars. It is the single source of truth for what is done, what is in progress, and what remains before each product can ship commercially.
+This document tracks the maturity of all four EoS Health products across all seven production pillars. It is the single source of truth for what is done, what is in progress, and what remains before each product can ship commercially.
 
 ---
 
-## The 6 Production Pillars
+## The 7 Production Pillars
 
 | # | Pillar | Description |
 |---|---|---|
@@ -16,6 +16,7 @@ This document tracks the maturity of all four EoS Health products across all six
 | 4 | **Clinical Validation** | IRB studies, FDA 510(k)/De Novo, HIPAA compliance, accuracy data |
 | 5 | **Health Algorithms** | ECG/AFib, SpO₂, HRV, sleep, VO2max, glucose, sensor fusion, calibration |
 | 6 | **Mobile App** | React Native Health Hub, BLE GATT, HIPAA storage, UI/UX |
+| 7 | **Regulatory Compliance** | FDA, FCC, HIPAA, FTC, NIST CSF, ISO 13485, IEC 60601, clinical validation |
 
 ---
 
@@ -31,6 +32,7 @@ This document tracks the maturity of all four EoS Health products across all six
 | Clinical Validation | 📋 Pathway defined | `docs/HIPAA_AND_FDA_COMPLIANCE.md` | Class II 510(k), predicate: Apple Watch |
 | Health Algorithms | ✅ Complete | `firmware/shared/health-algorithms/` | ECG, SpO₂, HRV, sleep, VO2max, temp, resp |
 | Mobile App | ✅ Architecture | `apps/mobile/HEALTH_HUB_ARCHITECTURE.md` | BLE GATT defined, React Native spec |
+| Regulatory Compliance | ✅ Documentation complete | `regulatory/fda/FDA_510K_HEALTH_KEY_ULTRA.md`, `regulatory/fcc/`, `regulatory/hipaa/`, `regulatory/ftc/`, `regulatory/cybersecurity/`, `regulatory/iso13485/`, `regulatory/iec60601/`, `regulatory/clinical-validation/` | FDA 510(k) pre-submission, FCC checklist, HIPAA, FTC, NIST CSF 2.0, ISO 13485, IEC 60601, clinical validation — all documented; physical testing and submissions pending |
 
 ### HEALTH-BAND Neuro (EOS-2026-002)
 
@@ -42,6 +44,7 @@ This document tracks the maturity of all four EoS Health products across all six
 | Clinical Validation | 📋 Pathway defined | `docs/HIPAA_AND_FDA_COMPLIANCE.md` | Class II 510(k), predicate: TENS units |
 | Health Algorithms | ✅ Complete | `firmware/health-band-neuro/algorithms/` | sEMG, EDA, TENS, tremor detection |
 | Mobile App | ✅ Architecture | `apps/mobile/HEALTH_HUB_ARCHITECTURE.md` | Neural tab, sEMG live view, TENS control |
+| Regulatory Compliance | ✅ Documentation complete | `regulatory/fda/FDA_510K_HEALTH_BAND_NEURO.md`, `regulatory/iec60601/` (IEC 60601-2-10 TENS) | FDA 510(k) pre-submission with TENS safety data, IEC 60601-2-10 checklist — physical testing pending |
 
 ### HEALTH-RING (EOS-2026-003)
 
@@ -53,6 +56,7 @@ This document tracks the maturity of all four EoS Health products across all six
 | Clinical Validation | 📋 Pathway defined | `docs/HIPAA_AND_FDA_COMPLIANCE.md` | Base: Class I exempt; Ultra: 510(k) AFib |
 | Health Algorithms | ✅ Complete | `firmware/shared/health-algorithms/` | HbA1c, BP, ECG, SpO₂, HRV, sleep, VO2max |
 | Mobile App | ✅ Architecture | `apps/mobile/HEALTH_HUB_ARCHITECTURE.md` | All vitals tabs, Lab tab for HbA1c |
+| Regulatory Compliance | ✅ Documentation complete | `regulatory/fda/FDA_DE_NOVO_HEALTH_RING_AND_LAB.md` | FDA De Novo pre-submission package; clinical studies (HbA1c n=200, BP n=85, AFib n=100) required before submission |
 
 ### HEALTH-LAB (EOS-2026-004)
 
@@ -64,6 +68,7 @@ This document tracks the maturity of all four EoS Health products across all six
 | Clinical Validation | 📋 Pathway defined | `docs/HIPAA_AND_FDA_COMPLIANCE.md` | De Novo (base) / PMA (ultra CGM) |
 | Health Algorithms | ✅ Complete | `firmware/shared/health-algorithms/glucose/` | SCBN Kalman, 3-electrode drift correction |
 | Mobile App | ✅ Architecture | `apps/mobile/HEALTH_HUB_ARCHITECTURE.md` | Lab tab, glucose trend, alerts |
+| Regulatory Compliance | ✅ Documentation complete | `regulatory/fda/FDA_DE_NOVO_HEALTH_RING_AND_LAB.md` | FDA De Novo pre-submission package; clinical studies (glucose n=50, cortisol n=30, 14-day wear n=20) required before submission |
 
 ---
 
