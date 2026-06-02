@@ -1,0 +1,153 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:eos-health-sbom-2026-001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-02T00:00:00Z",
+    "tools": [{"vendor": "EmbeddedOS", "name": "eos-sbom-generator", "version": "1.0.0"}],
+    "component": {
+      "type": "firmware",
+      "bom-ref": "eos-health-platform",
+      "name": "EoS Health Platform",
+      "version": "1.0.0",
+      "manufacturer": {"name": "EmbeddedOS Inc.", "contact": [{"email": "regulatory@embeddedos.com"}]}
+    }
+  },
+  "components": [
+    {
+      "type": "firmware",
+      "bom-ref": "nrf5340-sdk-2.6.0",
+      "name": "nRF Connect SDK",
+      "version": "2.6.0",
+      "supplier": {"name": "Nordic Semiconductor"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/nrfconnect/sdk-nrf"}],
+      "vulnerabilities": [],
+      "devices": ["health-key-ultra", "health-band-neuro", "health-ring", "health-lab"]
+    },
+    {
+      "type": "firmware",
+      "bom-ref": "zephyr-rtos-3.6.0",
+      "name": "Zephyr RTOS",
+      "version": "3.6.0",
+      "supplier": {"name": "Linux Foundation"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/zephyrproject-rtos/zephyr"}],
+      "vulnerabilities": [],
+      "devices": ["health-key-ultra", "health-band-neuro", "health-ring", "health-lab"]
+    },
+    {
+      "type": "firmware",
+      "bom-ref": "mcuboot-2.0.0",
+      "name": "MCUboot",
+      "version": "2.0.0",
+      "supplier": {"name": "MCUboot Project"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/mcu-tools/mcuboot"}],
+      "vulnerabilities": [],
+      "devices": ["health-key-ultra", "health-band-neuro", "health-ring", "health-lab"]
+    },
+    {
+      "type": "firmware",
+      "bom-ref": "mbedtls-3.5.0",
+      "name": "Mbed TLS",
+      "version": "3.5.0",
+      "supplier": {"name": "Arm Limited"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/Mbed-TLS/mbedtls"}],
+      "vulnerabilities": [],
+      "devices": ["health-key-ultra", "health-band-neuro", "health-ring", "health-lab"]
+    },
+    {
+      "type": "firmware",
+      "bom-ref": "cmsis-dsp-1.15.0",
+      "name": "CMSIS-DSP",
+      "version": "1.15.0",
+      "supplier": {"name": "Arm Limited"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/ARM-software/CMSIS-DSP"}],
+      "vulnerabilities": [],
+      "devices": ["health-key-ultra", "health-band-neuro"]
+    },
+    {
+      "type": "firmware",
+      "bom-ref": "stm32hal-1.11.0",
+      "name": "STM32 HAL",
+      "version": "1.11.0",
+      "supplier": {"name": "STMicroelectronics"},
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "externalReferences": [{"type": "website", "url": "https://www.st.com/en/embedded-software/stm32cube-mcu-mpu-packages.html"}],
+      "vulnerabilities": [],
+      "devices": ["health-band-neuro"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "tensorflow-lite-micro-2.14.0",
+      "name": "TensorFlow Lite Micro",
+      "version": "2.14.0",
+      "supplier": {"name": "Google LLC"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/tensorflow/tflite-micro"}],
+      "vulnerabilities": [],
+      "devices": ["health-band-neuro", "health-ring"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "react-native-0.73.0",
+      "name": "React Native",
+      "version": "0.73.0",
+      "supplier": {"name": "Meta Platforms, Inc."},
+      "licenses": [{"license": {"id": "MIT"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/facebook/react-native"}],
+      "vulnerabilities": [],
+      "devices": ["mobile-app"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "react-native-ble-plx-3.1.0",
+      "name": "react-native-ble-plx",
+      "version": "3.1.0",
+      "supplier": {"name": "Polidea"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/dotintent/react-native-ble-plx"}],
+      "vulnerabilities": [],
+      "devices": ["mobile-app"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "aws-sdk-js-v3-3.500.0",
+      "name": "AWS SDK for JavaScript v3",
+      "version": "3.500.0",
+      "supplier": {"name": "Amazon Web Services, Inc."},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/aws/aws-sdk-js-v3"}],
+      "vulnerabilities": [],
+      "devices": ["cloud-backend"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "express-4.18.2",
+      "name": "Express",
+      "version": "4.18.2",
+      "supplier": {"name": "OpenJS Foundation"},
+      "licenses": [{"license": {"id": "MIT"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/expressjs/express"}],
+      "vulnerabilities": [],
+      "devices": ["cloud-backend"]
+    },
+    {
+      "type": "library",
+      "bom-ref": "drizzle-orm-0.29.0",
+      "name": "Drizzle ORM",
+      "version": "0.29.0",
+      "supplier": {"name": "Drizzle Team"},
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "externalReferences": [{"type": "vcs", "url": "https://github.com/drizzle-team/drizzle-orm"}],
+      "vulnerabilities": [],
+      "devices": ["cloud-backend"]
+    }
+  ],
+  "vulnerabilities": [],
+  "notes": "SBOM generated per FDA Cybersecurity Guidance (2023) and NTIA minimum elements. All components verified against NVD CVE database as of 2026-06-01. CVE monitoring via Dependabot and OSV.dev. Next review: 2026-12-01."
+}

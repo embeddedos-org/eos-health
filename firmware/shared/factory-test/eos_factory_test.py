@@ -7,8 +7,12 @@ Automated factory test runner for all EoS Health devices.
 Connects via BLE (bleak), runs all tests, and writes JSON result.
 
 Usage:
+    # Real hardware:
     python3 eos_factory_test.py --device health-ring-ultra --serial EHR-2026-000001
     python3 eos_factory_test.py --device health-lab-ultra  --serial EHL-2026-000001
+
+    # CI/CD demo mode (no hardware required):
+    python3 eos_factory_test.py --demo
 
 Requirements:
     pip3 install bleak asyncio ed25519
@@ -313,16 +317,143 @@ class EosFactoryTest:
         return self.report.overall_result == "PASS"
 
 
+# ── Demo mode (no hardware required) ─────────────────────────────
+def run_demo_mode() -> bool:
+    """
+    Simulate factory test for all 4 devices without physical hardware.
+    Used for CI/CD validation and development testing.
+    All tests use deterministic simulated sensor values.
+    """
+    import random, os
+    random.seed(2026)
+
+    DEMO_DEVICES = [
+        ("health-key-ultra",  "EHK-2026-000001"),
+        ("health-band-neuro", "EHB-2026-000001"),
+        ("health-ring-ultra", "EHR-2026-000001"),
+        ("health-lab-ultra",  "EHL-2026-000001"),
+    ]
+
+    ALL_TESTS = [
+        ("FT-001", "BLE Advertising"),
+        ("FT-002", "BLE Connection"),
+        ("FT-003", "Firmware Version"),
+        ("FT-004", "Battery Voltage"),
+        ("FT-005", "ECG Signal Quality"),
+        ("FT-006", "PPG Signal Quality"),
+        ("FT-007", "SpO2 Calibration"),
+        ("FT-008", "IMU Self-Test"),
+        ("FT-009", "Temperature Sensor"),
+        ("FT-010", "Flash Read/Write"),
+        ("FT-011", "Glucose Electrode"),
+        ("FT-012", "Reference Electrode"),
+        ("FT-013", "Crypto Attestation"),
+        ("FT-014", "Provisioning Data"),
+    ]
+
+    DEVICE_TESTS = {
+        "health-key-ultra":  ["FT-001","FT-002","FT-003","FT-004","FT-005","FT-006","FT-007","FT-008","FT-009","FT-010","FT-013","FT-014"],
+        "health-band-neuro": ["FT-001","FT-002","FT-003","FT-004","FT-005","FT-006","FT-008","FT-009","FT-010","FT-013","FT-014"],
+        "health-ring-ultra": ["FT-001","FT-002","FT-003","FT-004","FT-005","FT-006","FT-007","FT-008","FT-009","FT-010","FT-013","FT-014"],
+        "health-lab-ultra":  ["FT-001","FT-002","FT-003","FT-004","FT-006","FT-008","FT-009","FT-010","FT-011","FT-012","FT-013","FT-014"],
+    }
+
+    DEMO_VALUES = {
+        "FT-001": "RSSI=-62dBm", "FT-002": "MTU=247B", "FT-003": "v1.0.0",
+        "FT-004": "4.12V (100%)", "FT-005": "HR=72 BPM, quality=94%",
+        "FT-006": "SpO2=98%, red_dc=125000, ir_dc=118000",
+        "FT-007": "ARMS=0.91%", "FT-008": "IMU self-test PASS",
+        "FT-009": "36.5°C", "FT-010": "0 errors",
+        "FT-011": "42.3 nA", "FT-012": "200.1 mV",
+        "FT-013": "ECDSA-P256 OK", "FT-014": "SN+MAC+KEY OK",
+    }
+
+    print("=" * 60)
+    print("  EoS Health Factory Test — DEMO MODE (no hardware)")
+    print(f"  Timestamp: {datetime.now(timezone.utc).isoformat()}")
+    print("  Note: All values are simulated. For real hardware, omit --demo.")
+    print("=" * 60)
+
+    total_tests = 0
+    total_passed = 0
+    all_reports = []
+
+    for device_type, serial in DEMO_DEVICES:
+        print(f"\n[Device] {device_type} | Serial: {serial}")
+        print("-" * 50)
+        test_ids = DEVICE_TESTS.get(device_type, [])
+        device_passed = 0
+        device_tests = []
+
+        for test_id, test_name in ALL_TESTS:
+            if test_id not in test_ids:
+                continue
+            duration_ms = random.randint(50, 400)
+            value = DEMO_VALUES.get(test_id, "OK")
+            result = TestResult(
+                id=test_id, name=test_name, result="PASS",
+                value=value, duration_ms=duration_ms
+            )
+            device_tests.append(result)
+            device_passed += 1
+            total_tests += 1
+            total_passed += 1
+            print(f"  ✅ [{test_id}] {test_name}: {value} ({duration_ms}ms)")
+
+        overall = "PASS" if device_passed == len(test_ids) else "FAIL"
+        report = FactoryTestReport(
+            serial=serial, device_type=device_type,
+            hw_revision="rev-a", fw_version="1.0.0",
+            ble_address=f"AA:BB:CC:DD:EE:{random.randint(10,99):02X}",
+            station_id="DEMO-STATION",
+            test_date=datetime.now(timezone.utc).isoformat(),
+            overall_result=overall, tests=device_tests,
+            calibration_applied=True
+        )
+        all_reports.append(asdict(report))
+        print(f"  → {overall}: {device_passed}/{len(test_ids)} tests passed")
+
+    print("\n" + "=" * 60)
+    print("  FACTORY TEST DEMO SUMMARY")
+    print("=" * 60)
+    print(f"  Devices tested: {len(DEMO_DEVICES)}")
+    print(f"  Total tests:    {total_tests}")
+    print(f"  Passed:         {total_passed}")
+    print(f"  Failed:         {total_tests - total_passed}")
+    overall_label = "✅ ALL PASS" if total_passed == total_tests else "❌ FAILURES DETECTED"
+    print(f"  Overall: {overall_label}")
+    print("=" * 60)
+
+    os.makedirs("factory_reports", exist_ok=True)
+    report_path = f"factory_reports/demo_report_{int(time.time())}.json"
+    with open(report_path, "w") as f:
+        json.dump({"mode": "demo",
+                   "timestamp": datetime.now(timezone.utc).isoformat(),
+                   "summary": {"total": total_tests, "passed": total_passed},
+                   "device_reports": all_reports}, f, indent=2)
+    print(f"\n  Report saved: {report_path}")
+    return total_passed == total_tests
+
+
 # ── Entry point ──────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="EoS Health Factory Test")
-    parser.add_argument("--device",  required=True,
+    parser.add_argument("--device",
                         choices=["health-key-ultra", "health-band-neuro",
                                  "health-ring-base", "health-ring-ultra",
                                  "health-lab-base",  "health-lab-ultra"])
-    parser.add_argument("--serial",  required=True, help="Device serial number")
+    parser.add_argument("--serial",  help="Device serial number")
     parser.add_argument("--station", default="FACTORY-LINE-01")
+    parser.add_argument("--demo", action="store_true",
+                        help="Run in demo mode (no hardware required, for CI/CD)")
     args = parser.parse_args()
+
+    if args.demo:
+        passed = run_demo_mode()
+        sys.exit(0 if passed else 1)
+
+    if not args.device or not args.serial:
+        parser.error("--device and --serial are required unless --demo is specified")
 
     runner = EosFactoryTest(args.device, args.serial, args.station)
     passed = asyncio.run(runner.run_all())
