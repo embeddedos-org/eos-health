@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EoS Health Developer API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --bg3: #1a2235;
+      --border: #1e2d45;
+      --accent: #00d4ff;
+      --accent2: #7c3aed;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --sidebar-w: 260px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+
+    /* Layout */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w); min-width: var(--sidebar-w);
+      background: var(--bg2); border-right: 1px solid var(--border);
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      padding: 0 0 2rem;
+    }
+    .sidebar-logo {
+      padding: 1.5rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: white;
+    }
+    .logo-text { font-weight: 600; font-size: 15px; }
+    .logo-sub { font-size: 11px; color: var(--text3); }
+    .sidebar-section { padding: 1.25rem 1rem 0.25rem; }
+    .sidebar-section-title {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text3); margin-bottom: 0.5rem;
+    }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.75rem; border-radius: 6px;
+      font-size: 13.5px; color: var(--text2); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sidebar-link:hover { background: var(--bg3); color: var(--text); }
+    .sidebar-link.active { background: rgba(0,212,255,0.1); color: var(--accent); }
+    .method-badge {
+      font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
+      min-width: 34px; text-align: center;
+    }
+    .get { background: rgba(16,185,129,0.15); color: var(--green); }
+    .post { background: rgba(124,58,237,0.15); color: #a78bfa; }
+    .del { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* Main content */
+    .main { flex: 1; overflow-y: auto; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0a0e1a 0%, #0f1929 50%, #0a0e1a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 4rem 3rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -50%; right: -10%;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 12px;
+      color: var(--accent); margin-bottom: 1.5rem;
+    }
+    .hero h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+    .hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 1.1rem; color: var(--text2); max-width: 600px; margin-bottom: 2rem; }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 14px;
+      font-weight: 500; cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #00b8d9; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 0; border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .stat {
+      flex: 1; padding: 1rem 1.5rem; border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--text3); margin-top: 0.25rem; }
+
+    /* Content sections */
+    .content { padding: 2.5rem 3rem; max-width: 900px; }
+    .section { margin-bottom: 3rem; }
+    .section-title {
+      font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem;
+      padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-icon { font-size: 1.2rem; }
+    p { color: var(--text2); margin-bottom: 1rem; }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin: 1rem 0;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 1rem; background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text3);
+    }
+    .code-lang { display: flex; align-items: center; gap: 0.5rem; }
+    .lang-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .copy-btn {
+      background: none; border: 1px solid var(--border); color: var(--text3);
+      padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    pre { padding: 1.25rem; overflow-x: auto; font-size: 13px; line-height: 1.7; }
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .cm { color: var(--text3); font-style: italic; }
+    .fn { color: #82aaff; }
+    .num { color: #f78c6c; }
+    .var { color: var(--accent); }
+
+    /* Endpoint cards */
+    .endpoint-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 1rem; overflow: hidden;
+    }
+    .endpoint-header {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.25rem; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .endpoint-header:hover { background: var(--bg3); }
+    .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 14px; flex: 1; }
+    .endpoint-desc { font-size: 13px; color: var(--text3); }
+    .endpoint-body { padding: 1.25rem; border-top: 1px solid var(--border); display: none; }
+    .endpoint-body.open { display: block; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13.5px; }
+    th { text-align: left; padding: 0.6rem 1rem; background: var(--bg3); color: var(--text3); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); color: var(--text2); }
+    tr:last-child td { border-bottom: none; }
+    .param-name { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 13px; }
+    .param-type { color: #f78c6c; font-size: 12px; }
+    .param-req { color: var(--red); font-size: 11px; font-weight: 600; }
+    .param-opt { color: var(--text3); font-size: 11px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .tab {
+      padding: 0.6rem 1.25rem; font-size: 13px; cursor: pointer;
+      color: var(--text3); border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Alert boxes */
+    .alert {
+      padding: 0.875rem 1.25rem; border-radius: 8px; margin: 1rem 0;
+      font-size: 13.5px; display: flex; gap: 0.75rem; align-items: flex-start;
+    }
+    .alert-info { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); color: var(--text2); }
+    .alert-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: var(--text2); }
+    .alert-icon { font-size: 16px; margin-top: 1px; }
+
+    /* Scope pills */
+    .scope { display: inline-block; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); color: #a78bfa; font-size: 11px; padding: 1px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; margin: 2px; }
+
+    /* Rate limit table */
+    .plan-free { color: var(--text2); }
+    .plan-dev { color: var(--accent); }
+    .plan-prod { color: var(--green); }
+    .plan-ent { color: #f59e0b; }
+
+    /* Changelog */
+    .changelog-entry { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .changelog-date { min-width: 90px; font-size: 12px; color: var(--text3); padding-top: 3px; }
+    .changelog-content h4 { font-size: 14px; font-weight: 600; margin-bottom: 0.25rem; }
+    .changelog-content p { font-size: 13px; margin-bottom: 0; }
+    .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+    .tag-new { background: rgba(16,185,129,0.15); color: var(--green); }
+    .tag-fix { background: rgba(239,68,68,0.15); color: var(--red); }
+    .tag-break { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.75rem; }
+      .content { padding: 1.5rem; }
+      .stats-bar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">E</div>
+      <div>
+        <div class="logo-text">EoS Health API</div>
+        <div class="logo-sub">v1.0.0 · Developer Docs</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Getting Started</div>
+      <a class="sidebar-link active" onclick="showSection('overview')">📖 Overview</a>
+      <a class="sidebar-link" onclick="showSection('quickstart')">⚡ Quickstart</a>
+      <a class="sidebar-link" onclick="showSection('auth')">🔐 Authentication</a>
+      <a class="sidebar-link" onclick="showSection('rate-limits')">⏱ Rate Limits</a>
+      <a class="sidebar-link" onclick="showSection('sdks')">📦 SDKs</a>
+      <a class="sidebar-link" onclick="showSection('webhooks-guide')">🔔 Webhooks</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Heart & Circulation</div>
+      <a class="sidebar-link" onclick="showSection('ep-hr')"><span class="method-badge get">GET</span> Heart Rate</a>
+      <a class="sidebar-link" onclick="showSection('ep-hrv')"><span class="method-badge get">GET</span> HRV</a>
+      <a class="sidebar-link" onclick="showSection('ep-ecg')"><span class="method-badge get">GET</span> ECG</a>
+      <a class="sidebar-link" onclick="showSection('ep-bp')"><span class="method-badge get">GET</span> Blood Pressure</a>
+      <a class="sidebar-link" onclick="showSection('ep-spo2')"><span class="method-badge get">GET</span> SpO₂</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Metabolic</div>
+      <a class="sidebar-link" onclick="showSection('ep-glucose')"><span class="method-badge get">GET</span> Glucose</a>
+      <a class="sidebar-link" onclick="showSection('ep-hba1c')"><span class="method-badge get">GET</span> HbA1c</a>
+      <a class="sidebar-link" onclick="showSection('ep-biomarkers')"><span class="method-badge get">GET</span> Biomarkers</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Wellness</div>
+      <a class="sidebar-link" onclick="showSection('ep-sleep')"><span class="method-badge get">GET</span> Sleep</a>
+      <a class="sidebar-link" onclick="showSection('ep-activity')"><span class="method-badge get">GET</span> Activity</a>
+      <a class="sidebar-link" onclick="showSection('ep-recovery')"><span class="method-badge get">GET</span> Recovery</a>
+      <a class="sidebar-link" onclick="showSection('ep-stress')"><span class="method-badge get">GET</span> Stress</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Platform</div>
+      <a class="sidebar-link" onclick="showSection('ep-devices')"><span class="method-badge get">GET</span> Devices</a>
+      <a class="sidebar-link" onclick="showSection('ep-webhooks')"><span class="method-badge post">POST</span> Webhooks</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Reference</div>
+      <a class="sidebar-link" onclick="showSection('changelog')">📋 Changelog</a>
+      <a class="sidebar-link" href="eos-health-api.yaml" target="_blank">📄 OpenAPI Spec</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="section-overview">
+      <div class="hero-badge">✦ v1.0.0 · Production Ready</div>
+      <h1>EoS Health <span>Developer API</span></h1>
+      <p>Build health applications with the world's most advanced wearable data platform. Access ECG, HbA1c, continuous glucose, sEMG, cuffless blood pressure, and 28+ biomarkers from all four EoS Health devices.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showSection('quickstart')">Get Started →</button>
+        <button class="btn btn-outline" onclick="showSection('auth')">View Authentication</button>
+        <a href="eos-health-api.yaml" target="_blank"><button class="btn btn-outline">OpenAPI Spec ↗</button></a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value">28+</div><div class="stat-label">Health Metrics</div></div>
+      <div class="stat"><div class="stat-value">4</div><div class="stat-label">Devices</div></div>
+      <div class="stat"><div class="stat-value">3</div><div class="stat-label">Official SDKs</div></div>
+      <div class="stat"><div class="stat-value">&lt;500ms</div><div class="stat-label">Real-time Latency</div></div>
+      <div class="stat"><div class="stat-value">99.9%</div><div class="stat-label">Uptime SLA</div></div>
+    </div>
+
+    <div class="content">
+
+      <!-- Overview -->
+      <div class="section" id="section-overview-content">
+        <div class="section-title"><span class="section-icon">📖</span> Overview</div>
+        <p>The EoS Health API provides programmatic access to health data collected by all four EoS Health devices. It is designed for developers building fitness apps, clinical research tools, chronic disease management platforms, and enterprise wellness solutions.</p>
+
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <div>The sandbox environment at <code>sandbox.api.eoshealth.io</code> returns realistic synthetic data for all endpoints — no physical device required for development.</div>
+        </div>
+
+        <h3 style="font-size:15px;margin:1.5rem 0 0.75rem;color:var(--text)">Supported Devices</h3>
+        <table>
+          <thead><tr><th>Device</th><th>Unique Data</th><th>Common Data</th></tr></thead>
+          <tbody>
+            <tr><td><strong>HEALTH-KEY ULTRA</strong></td><td>BAC (breath alcohol), UV index, USB-HID mode</td><td>ECG, SpO₂, HR, HRV, sleep, activity</td></tr>
+            <tr><td><strong>HEALTH-BAND Neuro</strong></td><td>8-channel sEMG, EDA/stress, TENS sessions</td><td>ECG, SpO₂, HR, HRV, sleep, activity</td></tr>
+            <tr><td><strong>HEALTH-RING Ultra</strong></td><td>HbA1c (NIR), cuffless BP, 5λ PPG</td><td>ECG, SpO₂, HR, HRV, sleep, activity</td></tr>
+            <tr><td><strong>HEALTH-LAB Ultra</strong></td><td>Glucose, lactate, cortisol, K⁺, Na⁺, pH, uric acid</td><td>HR, activity, patch lifetime</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quickstart -->
+      <div class="section" id="section-quickstart" style="display:none">
+        <div class="section-title"><span class="section-icon">⚡</span> Quickstart</div>
+        <p>Get your first health data in under 5 minutes.</p>
+
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'qs')">Python</div>
+          <div class="tab" onclick="switchTab(this,'qs')">JavaScript</div>
+          <div class="tab" onclick="switchTab(this,'qs')">Swift</div>
+          <div class="tab" onclick="switchTab(this,'qs')">cURL</div>
+        </div>
+
+        <div class="tab-content active">
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-lang"><div class="lang-dot"></div>Python</div>
+              <button class="copy-btn">Copy</button>
+            </div>
+<pre><span class="cm"># pip install eos-health</span>
+<span class="kw">from</span> <span class="var">eos_health</span> <span class="kw">import</span> <span class="fn">EosHealthClient</span>
+
+<span class="cm"># Initialize with your access token</span>
+<span class="var">client</span> = <span class="fn">EosHealthClient</span>(<span class="var">access_token</span>=<span class="str">"eos_at_your_token_here"</span>)
+
+<span class="cm"># Get today's recovery score</span>
+<span class="var">recovery</span> = <span class="var">client</span>.recovery.<span class="fn">get</span>(<span class="var">start_date</span>=<span class="str">"2026-06-01"</span>)
+<span class="kw">for</span> <span class="var">day</span> <span class="kw">in</span> <span class="var">recovery</span>[<span class="str">"days"</span>]:
+    <span class="fn">print</span>(<span class="str">f"</span>{<span class="var">day</span>[<span class="str">'date'</span>]}<span class="str">: Recovery </span>{<span class="var">day</span>[<span class="str">'score'</span>]}<span class="str">/100 (</span>{<span class="var">day</span>[<span class="str">'category'</span>]}<span class="str">)"</span>)
+
+<span class="cm"># Get AFib detection from ECG</span>
+<span class="var">ecg</span> = <span class="var">client</span>.ecg.<span class="fn">get</span>(<span class="var">start_date</span>=<span class="str">"2026-06-01"</span>)
+<span class="kw">for</span> <span class="var">rec</span> <span class="kw">in</span> <span class="var">ecg</span>[<span class="str">"recordings"</span>]:
+    <span class="kw">if</span> <span class="var">rec</span>[<span class="str">"afib_detected"</span>]:
+        <span class="fn">print</span>(<span class="str">f"⚠️ AFib detected at </span>{<span class="var">rec</span>[<span class="str">'timestamp'</span>]}<span class="str"> (confidence: </span>{<span class="var">rec</span>[<span class="str">'afib_confidence'</span>]:.1%}<span class="str">)"</span>)
+
+<span class="cm"># Get continuous glucose (HEALTH-LAB)</span>
+<span class="var">glucose</span> = <span class="var">client</span>.glucose.<span class="fn">get</span>(<span class="var">start_date</span>=<span class="str">"2026-06-01"</span>)
+<span class="kw">for</span> <span class="var">reading</span> <span class="kw">in</span> <span class="var">glucose</span>[<span class="str">"data"</span>]:
+    <span class="fn">print</span>(<span class="str">f"</span>{<span class="var">reading</span>[<span class="str">'timestamp'</span>]}<span class="str">: </span>{<span class="var">reading</span>[<span class="str">'glucose_mgdl'</span>]}<span class="str"> mg/dL (</span>{<span class="var">reading</span>[<span class="str">'trend'</span>]}<span class="str">)"</span>)</pre>
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-lang"><div class="lang-dot" style="background:#f7df1e"></div>JavaScript</div>
+              <button class="copy-btn">Copy</button>
+            </div>
+<pre><span class="cm">// npm install @eos-health/api</span>
+<span class="kw">import</span> { <span class="fn">EosHealthClient</span> } <span class="kw">from</span> <span class="str">'@eos-health/api'</span>;
+
+<span class="kw">const</span> <span class="var">client</span> = <span class="kw">new</span> <span class="fn">EosHealthClient</span>({ <span class="var">accessToken</span>: <span class="str">'eos_at_your_token_here'</span> });
+
+<span class="cm">// Get recovery scores</span>
+<span class="kw">const</span> <span class="var">recovery</span> = <span class="kw">await</span> <span class="var">client</span>.recovery.<span class="fn">get</span>({ <span class="var">startDate</span>: <span class="str">'2026-06-01'</span> });
+<span class="var">recovery</span>.days.<span class="fn">forEach</span>(<span class="var">day</span> => {
+  <span class="var">console</span>.<span class="fn">log</span>(<span class="str">`</span>${<span class="var">day</span>.date}<span class="str">: </span>${<span class="var">day</span>.score}<span class="str">/100 (</span>${<span class="var">day</span>.category}<span class="str">)`</span>);
+});
+
+<span class="cm">// Get HbA1c (HEALTH-RING Ultra)</span>
+<span class="kw">const</span> <span class="var">hba1c</span> = <span class="kw">await</span> <span class="var">client</span>.hba1c.<span class="fn">get</span>({ <span class="var">startDate</span>: <span class="str">'2026-06-01'</span> });
+<span class="var">hba1c</span>.data.<span class="fn">forEach</span>(<span class="var">r</span> => {
+  <span class="var">console</span>.<span class="fn">log</span>(<span class="str">`HbA1c: </span>${<span class="var">r</span>.hba1cPct}<span class="str">% (</span>${<span class="var">r</span>.hba1cMmol}<span class="str"> mmol/mol)`</span>);
+});</pre>
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-lang"><div class="lang-dot" style="background:#fa7343"></div>Swift</div>
+              <button class="copy-btn">Copy</button>
+            </div>
+<pre><span class="cm">// Package.swift: .package(url: "https://github.com/embeddedos-org/eos-health-swift")</span>
+<span class="kw">import</span> <span class="var">EosHealth</span>
+
+<span class="kw">let</span> <span class="var">client</span> = <span class="fn">EosHealthClient</span>(<span class="var">accessToken</span>: <span class="str">"eos_at_your_token_here"</span>)
+
+<span class="cm">// Get recovery scores</span>
+<span class="kw">let</span> <span class="var">recovery</span> = <span class="kw">try await</span> <span class="var">client</span>.recovery.<span class="fn">get</span>(<span class="var">startDate</span>: <span class="str">"2026-06-01"</span>)
+<span class="kw">for</span> <span class="var">day</span> <span class="kw">in</span> <span class="var">recovery</span>.days {
+    <span class="fn">print</span>(<span class="str">"Recovery: \(day.score)/100 (\(day.category))"</span>)
+}</pre>
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-lang"><div class="lang-dot" style="background:#888"></div>cURL</div>
+              <button class="copy-btn">Copy</button>
+            </div>
+<pre><span class="cm"># Get recovery scores</span>
+<span class="fn">curl</span> -X GET <span class="str">"https://api.eoshealth.io/v1/recovery?start_date=2026-06-01"</span> \
+  -H <span class="str">"Authorization: Bearer eos_at_your_token_here"</span> \
+  -H <span class="str">"Accept: application/json"</span>
+
+<span class="cm"># Get ECG recordings with AFib detection</span>
+<span class="fn">curl</span> -X GET <span class="str">"https://api.eoshealth.io/v1/ecg?start_date=2026-06-01&end_date=2026-06-07"</span> \
+  -H <span class="str">"Authorization: Bearer eos_at_your_token_here"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentication -->
+      <div class="section" id="section-auth" style="display:none">
+        <div class="section-title"><span class="section-icon">🔐</span> Authentication</div>
+        <p>The EoS Health API uses OAuth 2.0 Authorization Code flow. Users authorize your application, and you receive an access token to make API calls on their behalf.</p>
+
+        <h3 style="font-size:15px;margin:1.5rem 0 0.75rem;color:var(--text)">OAuth 2.0 Scopes</h3>
+        <table>
+          <thead><tr><th>Scope</th><th>Access</th></tr></thead>
+          <tbody>
+            <tr><td><span class="scope">read:health</span></td><td>All health metrics (HR, ECG, SpO₂, glucose, sleep, activity, recovery)</td></tr>
+            <tr><td><span class="scope">read:devices</span></td><td>Device list, firmware version, battery status</td></tr>
+            <tr><td><span class="scope">read:user</span></td><td>User profile and email</td></tr>
+            <tr><td><span class="scope">write:webhooks</span></td><td>Create and delete webhooks</td></tr>
+            <tr><td><span class="scope">read:ecg_waveform</span></td><td>Raw ECG waveform data (requires explicit user consent)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-lang"><div class="lang-dot"></div>Authorization URL</div>
+          </div>
+<pre>https://api.eoshealth.io/v1/oauth/authorize
+  ?client_id=<span class="var">YOUR_CLIENT_ID</span>
+  &redirect_uri=<span class="var">https://your-app.com/callback</span>
+  &scope=<span class="str">read:health read:devices read:user</span>
+  &state=<span class="var">random_csrf_token</span>
+  &response_type=<span class="var">code</span></pre>
+        </div>
+      </div>
+
+      <!-- Rate Limits -->
+      <div class="section" id="section-rate-limits" style="display:none">
+        <div class="section-title"><span class="section-icon">⏱</span> Rate Limits</div>
+        <table>
+          <thead><tr><th>Plan</th><th>Requests/min</th><th>Requests/day</th><th>WebSocket streams</th><th>Price</th></tr></thead>
+          <tbody>
+            <tr><td class="plan-free">Free</td><td>60</td><td>1,000</td><td>1</td><td>$0/mo</td></tr>
+            <tr><td class="plan-dev">Developer</td><td>300</td><td>50,000</td><td>5</td><td>$29/mo</td></tr>
+            <tr><td class="plan-prod">Production</td><td>1,000</td><td>500,000</td><td>25</td><td>$149/mo</td></tr>
+            <tr><td class="plan-ent">Enterprise</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td><td>Custom</td></tr>
+          </tbody>
+        </table>
+        <p>Rate limit headers are returned on every response: <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.</p>
+      </div>
+
+      <!-- SDKs -->
+      <div class="section" id="section-sdks" style="display:none">
+        <div class="section-title"><span class="section-icon">📦</span> Official SDKs</div>
+        <table>
+          <thead><tr><th>Language</th><th>Install</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>Python 3.9+</td><td><code>pip install eos-health</code></td><td><a href="#">GitHub</a></td></tr>
+            <tr><td>JavaScript/TypeScript</td><td><code>npm install @eos-health/api</code></td><td><a href="#">GitHub</a></td></tr>
+            <tr><td>Swift (iOS/macOS)</td><td>Swift Package Manager</td><td><a href="#">GitHub</a></td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <div>Community SDKs for Kotlin, Go, and Ruby are in development. Contribute at <a href="https://github.com/embeddedos-org/eos-health">github.com/embeddedos-org/eos-health</a>.</div>
+        </div>
+      </div>
+
+      <!-- Webhooks Guide -->
+      <div class="section" id="section-webhooks-guide" style="display:none">
+        <div class="section-title"><span class="section-icon">🔔</span> Webhooks</div>
+        <p>Webhooks deliver real-time event notifications to your server. EoS Health signs every webhook payload with HMAC-SHA256 using your webhook secret.</p>
+
+        <h3 style="font-size:15px;margin:1.5rem 0 0.75rem;color:var(--text)">Available Events</h3>
+        <table>
+          <thead><tr><th>Event</th><th>Trigger</th><th>Device</th></tr></thead>
+          <tbody>
+            <tr><td><code>afib.detected</code></td><td>AFib rhythm detected in ECG</td><td>All</td></tr>
+            <tr><td><code>glucose.alert</code></td><td>Glucose outside normal range</td><td>HEALTH-LAB</td></tr>
+            <tr><td><code>glucose.critical</code></td><td>Glucose critically low/high</td><td>HEALTH-LAB</td></tr>
+            <tr><td><code>spo2.alert</code></td><td>SpO₂ drops below 90%</td><td>All</td></tr>
+            <tr><td><code>blood_pressure.alert</code></td><td>BP exceeds hypertension threshold</td><td>HEALTH-RING Ultra</td></tr>
+            <tr><td><code>heart_rate.alert</code></td><td>HR exceeds user-defined threshold</td><td>All</td></tr>
+            <tr><td><code>device.sync</code></td><td>Device synced new data</td><td>All</td></tr>
+            <tr><td><code>device.low_battery</code></td><td>Battery below 15%</td><td>All</td></tr>
+            <tr><td><code>device.ota_available</code></td><td>New firmware available</td><td>All</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-lang"><div class="lang-dot"></div>Webhook Signature Verification (Python)</div>
+          </div>
+<pre><span class="kw">import</span> <span class="var">hmac</span>, <span class="var">hashlib</span>
+
+<span class="kw">def</span> <span class="fn">verify_webhook</span>(<span class="var">payload</span>: <span class="var">bytes</span>, <span class="var">signature</span>: <span class="var">str</span>, <span class="var">secret</span>: <span class="var">str</span>) -> <span class="var">bool</span>:
+    <span class="var">expected</span> = <span class="var">hmac</span>.<span class="fn">new</span>(<span class="var">secret</span>.<span class="fn">encode</span>(), <span class="var">payload</span>, <span class="var">hashlib</span>.sha256).<span class="fn">hexdigest</span>()
+    <span class="kw">return</span> <span class="var">hmac</span>.<span class="fn">compare_digest</span>(<span class="str">f"sha256=</span>{<span class="var">expected</span>}<span class="str">"</span>, <span class="var">signature</span>)</pre>
+        </div>
+      </div>
+
+      <!-- Endpoint: Heart Rate -->
+      <div class="section" id="section-ep-hr" style="display:none">
+        <div class="section-title"><span class="section-icon">❤️</span> Heart Rate</div>
+        <div class="endpoint-card">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/v1/heart-rate</span>
+            <span class="endpoint-desc">Get heart rate readings</span>
+          </div>
+          <div class="endpoint-body open">
+            <p>Returns heart rate measurements from all connected devices. Supports all 4 EoS Health devices.</p>
+            <p><strong>Required scope:</strong> <span class="scope">read:health</span></p>
+            <h4 style="font-size:13px;margin:1rem 0 0.5rem;color:var(--text)">Query Parameters</h4>
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="param-name">start_date</td><td class="param-type">string</td><td class="param-opt">optional</td><td>ISO date (2026-06-01)</td></tr>
+                <tr><td class="param-name">end_date</td><td class="param-type">string</td><td class="param-opt">optional</td><td>ISO date (2026-06-07)</td></tr>
+                <tr><td class="param-name">resolution</td><td class="param-type">string</td><td class="param-opt">optional</td><td>raw, 1min, 5min, 15min, 1hour, 1day (default: 1min)</td></tr>
+                <tr><td class="param-name">device_id</td><td class="param-type">string</td><td class="param-opt">optional</td><td>Filter by device</td></tr>
+                <tr><td class="param-name">limit</td><td class="param-type">integer</td><td class="param-opt">optional</td><td>1–1000 (default: 100)</td></tr>
+              </tbody>
+            </table>
+            <div class="code-block">
+              <div class="code-header"><div class="code-lang"><div class="lang-dot" style="background:#888"></div>Response</div></div>
+<pre>{
+  <span class="str">"data"</span>: [
+    {
+      <span class="str">"timestamp"</span>: <span class="str">"2026-06-01T08:00:00Z"</span>,
+      <span class="str">"bpm"</span>: <span class="num">62</span>,
+      <span class="str">"confidence"</span>: <span class="num">0.98</span>,
+      <span class="str">"device_id"</span>: <span class="str">"eos_ring_abc123"</span>
+    }
+  ],
+  <span class="str">"next_token"</span>: <span class="str">"eyJvZmZzZXQiOjEwMH0"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint: ECG -->
+      <div class="section" id="section-ep-ecg" style="display:none">
+        <div class="section-title"><span class="section-icon">📈</span> ECG</div>
+        <div class="endpoint-card">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/v1/ecg</span>
+            <span class="endpoint-desc">Get ECG recordings with AFib detection</span>
+          </div>
+          <div class="endpoint-body open">
+            <p>Returns ECG recordings with automated analysis including AFib detection (AUC=0.998), QRS/QT/PR intervals, and HR. Available on all 4 EoS Health devices.</p>
+            <p><strong>Required scope:</strong> <span class="scope">read:health</span> · Raw waveform requires <span class="scope">read:ecg_waveform</span></p>
+            <div class="alert alert-warn">
+              <span class="alert-icon">⚠️</span>
+              <div>AFib detection is for wellness monitoring only and is not a medical diagnosis. Users should consult a physician for any cardiac concerns.</div>
+            </div>
+            <div class="code-block">
+              <div class="code-header"><div class="code-lang"><div class="lang-dot" style="background:#888"></div>Response</div></div>
+<pre>{
+  <span class="str">"recordings"</span>: [
+    {
+      <span class="str">"id"</span>: <span class="str">"ecg_20260601_001"</span>,
+      <span class="str">"timestamp"</span>: <span class="str">"2026-06-01T07:30:00Z"</span>,
+      <span class="str">"duration_sec"</span>: <span class="num">30</span>,
+      <span class="str">"hr"</span>: <span class="num">68</span>,
+      <span class="str">"hrv_rmssd"</span>: <span class="num">42.3</span>,
+      <span class="str">"afib_detected"</span>: <span class="kw">false</span>,
+      <span class="str">"afib_confidence"</span>: <span class="num">0.02</span>,
+      <span class="str">"qrs_duration_ms"</span>: <span class="num">88</span>,
+      <span class="str">"qt_interval_ms"</span>: <span class="num">390</span>,
+      <span class="str">"pr_interval_ms"</span>: <span class="num">162</span>,
+      <span class="str">"device_id"</span>: <span class="str">"eos_ring_abc123"</span>
+    }
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint: Recovery -->
+      <div class="section" id="section-ep-recovery" style="display:none">
+        <div class="section-title"><span class="section-icon">🔋</span> Recovery</div>
+        <div class="endpoint-card">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/v1/recovery</span>
+            <span class="endpoint-desc">Get daily recovery scores (0–100)</span>
+          </div>
+          <div class="endpoint-body open">
+            <p>Recovery score combines HRV, resting HR, sleep quality, respiratory rate, and skin temperature. Comparable to Whoop Recovery Score but uses more data sources.</p>
+            <div class="code-block">
+              <div class="code-header"><div class="code-lang"><div class="lang-dot" style="background:#888"></div>Response</div></div>
+<pre>{
+  <span class="str">"days"</span>: [
+    {
+      <span class="str">"date"</span>: <span class="str">"2026-06-01"</span>,
+      <span class="str">"score"</span>: <span class="num">84</span>,
+      <span class="str">"category"</span>: <span class="str">"good"</span>,
+      <span class="str">"hrv_rmssd"</span>: <span class="num">48.2</span>,
+      <span class="str">"resting_hr"</span>: <span class="num">54</span>,
+      <span class="str">"sleep_score"</span>: <span class="num">82</span>,
+      <span class="str">"body_temp_delta"</span>: <span class="num">-0.1</span>
+    }
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint: Glucose -->
+      <div class="section" id="section-ep-glucose" style="display:none">
+        <div class="section-title"><span class="section-icon">🩸</span> Glucose</div>
+        <div class="endpoint-card">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/v1/glucose</span>
+            <span class="endpoint-desc">Continuous glucose monitoring (HEALTH-LAB)</span>
+          </div>
+          <div class="endpoint-body open">
+            <p>Returns continuous glucose readings every 5 minutes from HEALTH-LAB patch. ISO 15197 compliant — 100% Zone A accuracy in clinical validation.</p>
+            <p><strong>Requires:</strong> HEALTH-LAB device · <span class="scope">read:health</span></p>
+            <div class="code-block">
+              <div class="code-header"><div class="code-lang"><div class="lang-dot" style="background:#888"></div>Response</div></div>
+<pre>{
+  <span class="str">"data"</span>: [
+    {
+      <span class="str">"timestamp"</span>: <span class="str">"2026-06-01T08:00:00Z"</span>,
+      <span class="str">"glucose_mgdl"</span>: <span class="num">94.2</span>,
+      <span class="str">"glucose_mmol"</span>: <span class="num">5.23</span>,
+      <span class="str">"trend"</span>: <span class="str">"stable"</span>,
+      <span class="str">"alert"</span>: <span class="kw">null</span>
+    }
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Changelog -->
+      <div class="section" id="section-changelog" style="display:none">
+        <div class="section-title"><span class="section-icon">📋</span> Changelog</div>
+        <div class="changelog-entry">
+          <div class="changelog-date">Jun 2026</div>
+          <div class="changelog-content">
+            <h4><span class="tag tag-new">NEW</span> v1.0.0 — Initial Release</h4>
+            <p>Full API launch with 28+ health metrics, OAuth 2.0, webhooks, and SDKs for Python, JavaScript, and Swift. Sandbox environment available at sandbox.api.eoshealth.io.</p>
+          </div>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-date">Q3 2026</div>
+          <div class="changelog-content">
+            <h4><span class="tag tag-new">PLANNED</span> v1.1.0 — Real-time WebSocket streams</h4>
+            <p>Live streaming of HR, SpO₂, ECG, and glucose data via WebSocket for real-time applications.</p>
+          </div>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-date">Q4 2026</div>
+          <div class="changelog-content">
+            <h4><span class="tag tag-new">PLANNED</span> v1.2.0 — Kotlin + Go SDKs</h4>
+            <p>Official Android (Kotlin) and Go SDKs.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder sections for other endpoints -->
+      <div id="section-ep-hrv" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">📊</span> HRV</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/hrv</span><span class="endpoint-desc">RMSSD, SDNN, pNN50, LF/HF ratio</span></div></div>
+      </div>
+      <div id="section-ep-spo2" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🫁</span> SpO₂</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/spo2</span><span class="endpoint-desc">Blood oxygen saturation — ARMS 0.44%</span></div></div>
+      </div>
+      <div id="section-ep-bp" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">💉</span> Blood Pressure</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/blood-pressure</span><span class="endpoint-desc">Cuffless BP via PPTT — HEALTH-RING Ultra only</span></div></div>
+      </div>
+      <div id="section-ep-hba1c" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🔬</span> HbA1c</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/hba1c</span><span class="endpoint-desc">Non-invasive HbA1c via 5λ NIR — HEALTH-RING Ultra only</span></div></div>
+      </div>
+      <div id="section-ep-biomarkers" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🧪</span> Biomarkers</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/biomarkers</span><span class="endpoint-desc">Glucose, lactate, cortisol, K⁺, Na⁺, pH, uric acid — HEALTH-LAB only</span></div></div>
+      </div>
+      <div id="section-ep-sleep" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">😴</span> Sleep</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/sleep</span><span class="endpoint-desc">Sleep staging, efficiency, SpO₂ during sleep</span></div></div>
+      </div>
+      <div id="section-ep-activity" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🏃</span> Activity</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/activity</span><span class="endpoint-desc">Steps, calories, VO₂max, workouts with sEMG</span></div></div>
+      </div>
+      <div id="section-ep-stress" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🧠</span> Stress</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/stress</span><span class="endpoint-desc">Stress index from EDA + HRV — HEALTH-BAND Neuro</span></div></div>
+      </div>
+      <div id="section-ep-devices" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">📱</span> Devices</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/devices</span><span class="endpoint-desc">List devices, firmware version, battery</span></div></div>
+      </div>
+      <div id="section-ep-webhooks" style="display:none" class="section">
+        <div class="section-title"><span class="section-icon">🔔</span> Webhooks API</div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge post">POST</span><span class="endpoint-path">/v1/webhooks</span><span class="endpoint-desc">Register webhook for real-time events</span></div></div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge get">GET</span><span class="endpoint-path">/v1/webhooks</span><span class="endpoint-desc">List registered webhooks</span></div></div>
+        <div class="endpoint-card"><div class="endpoint-header"><span class="method-badge del">DEL</span><span class="endpoint-path">/v1/webhooks/{id}</span><span class="endpoint-desc">Delete a webhook</span></div></div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script>
+function showSection(id) {
+  // Hide all sections
+  document.querySelectorAll('[id^="section-"]').forEach(el => el.style.display = 'none');
+  // Show target
+  const el = document.getElementById('section-' + id) || document.getElementById('section-' + id + '-content');
+  if (el) el.style.display = 'block';
+  // Update active sidebar link
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function toggleEndpoint(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function switchTab(tab, group) {
+  const tabs = tab.parentElement.querySelectorAll('.tab');
+  const contents = tab.parentElement.nextElementSibling
+    ? tab.parentElement.parentElement.querySelectorAll('.tab-content') : [];
+  const idx = Array.from(tabs).indexOf(tab);
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  const allContents = tab.closest('.section').querySelectorAll('.tab-content');
+  allContents.forEach((c, i) => c.classList.toggle('active', i === idx));
+}
+
+// Show overview by default
+document.getElementById('section-overview-content').style.display = 'block';
+</script>
+</body>
+</html>

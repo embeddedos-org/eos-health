@@ -1,0 +1,930 @@
+openapi: 3.1.0
+info:
+  title: EoS Health Developer API
+  version: 1.0.0
+  description: |
+    The EoS Health API gives developers programmatic access to health data from all four
+    EoS Health devices — HEALTH-KEY ULTRA, HEALTH-BAND Neuro, HEALTH-RING, and HEALTH-LAB.
+
+    ## Authentication
+    All API requests require a Bearer token obtained via OAuth 2.0 Authorization Code flow.
+    Include the token in the `Authorization` header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+
+    ## Rate Limits
+    | Plan       | Requests/min | Requests/day | WebSocket streams |
+    |------------|-------------|--------------|-------------------|
+    | Free       | 60          | 1,000        | 1                 |
+    | Developer  | 300         | 50,000       | 5                 |
+    | Production | 1,000       | 500,000      | 25                |
+    | Enterprise | Unlimited   | Unlimited    | Unlimited         |
+
+    ## Data Freshness
+    - Real-time stream: <500 ms latency via WebSocket
+    - REST polling: data synced within 5 minutes of device sync
+    - Historical data: available for full device lifetime
+
+    ## Base URL
+    ```
+    https://api.eoshealth.io/v1
+    ```
+
+  contact:
+    name: EoS Health Developer Support
+    url: https://developers.eoshealth.io
+    email: api@eoshealth.io
+  license:
+    name: EoS Health API Terms of Service
+    url: https://eoshealth.io/api/terms
+
+servers:
+  - url: https://api.eoshealth.io/v1
+    description: Production
+  - url: https://sandbox.api.eoshealth.io/v1
+    description: Sandbox (test data, no real devices required)
+
+security:
+  - BearerAuth: []
+  - OAuth2:
+      - read:health
+      - read:devices
+      - read:user
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── Auth ──────────────────────────────────────────────────────────────────
+  /oauth/authorize:
+    get:
+      tags: [Authentication]
+      summary: Initiate OAuth 2.0 Authorization Code flow
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          schema: { type: string }
+        - name: redirect_uri
+          in: query
+          required: true
+          schema: { type: string, format: uri }
+        - name: scope
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "read:health read:devices read:user"
+        - name: state
+          in: query
+          required: true
+          schema: { type: string }
+        - name: response_type
+          in: query
+          required: true
+          schema: { type: string, enum: [code] }
+      responses:
+        "302":
+          description: Redirect to EoS Health login
+
+  /oauth/token:
+    post:
+      tags: [Authentication]
+      summary: Exchange authorization code for access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant_type, code, redirect_uri, client_id, client_secret]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [authorization_code, refresh_token]
+                code:
+                  type: string
+                redirect_uri:
+                  type: string
+                  format: uri
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                refresh_token:
+                  type: string
+      responses:
+        "200":
+          description: Token response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+  # ── User ──────────────────────────────────────────────────────────────────
+  /user:
+    get:
+      tags: [User]
+      summary: Get authenticated user profile
+      security:
+        - BearerAuth: [read:user]
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ── Devices ───────────────────────────────────────────────────────────────
+  /devices:
+    get:
+      tags: [Devices]
+      summary: List all devices registered to the user
+      security:
+        - BearerAuth: [read:devices]
+      responses:
+        "200":
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Device"
+
+  /devices/{device_id}:
+    get:
+      tags: [Devices]
+      summary: Get device details
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+      responses:
+        "200":
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+
+  /devices/{device_id}/battery:
+    get:
+      tags: [Devices]
+      summary: Get current battery level and charging status
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+      responses:
+        "200":
+          description: Battery status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatteryStatus"
+
+  # ── Heart Rate ────────────────────────────────────────────────────────────
+  /heart-rate:
+    get:
+      tags: [Heart Rate]
+      summary: Get heart rate readings
+      description: |
+        Returns heart rate measurements from all connected devices that support HR.
+        Supports all 4 EoS Health devices.
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/DeviceFilter"
+        - $ref: "#/components/parameters/Resolution"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Heart rate data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeartRateResponse"
+
+  /heart-rate/summary:
+    get:
+      tags: [Heart Rate]
+      summary: Get daily heart rate summary (resting, max, min, avg)
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Daily HR summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeartRateSummary"
+
+  # ── HRV ───────────────────────────────────────────────────────────────────
+  /hrv:
+    get:
+      tags: [HRV]
+      summary: Get heart rate variability (RMSSD, SDNN, pNN50)
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/DeviceFilter"
+      responses:
+        "200":
+          description: HRV data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HRVResponse"
+
+  # ── SpO2 ──────────────────────────────────────────────────────────────────
+  /spo2:
+    get:
+      tags: [SpO2]
+      summary: Get blood oxygen saturation readings
+      description: |
+        Returns SpO₂ measurements. Available on HEALTH-KEY ULTRA, HEALTH-RING, and HEALTH-BAND Neuro.
+        ARMS ≤0.44% (ISO 80601-2-61 compliant).
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/DeviceFilter"
+      responses:
+        "200":
+          description: SpO₂ data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpO2Response"
+
+  # ── ECG ───────────────────────────────────────────────────────────────────
+  /ecg:
+    get:
+      tags: [ECG]
+      summary: Get ECG recordings
+      description: |
+        Returns ECG waveform data and analysis results. Available on all 4 devices.
+        Includes AFib detection (AUC=0.998), HR, HRV, and QRS interval measurements.
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/DeviceFilter"
+        - name: include_waveform
+          in: query
+          schema: { type: boolean, default: false }
+          description: Include raw ECG waveform samples (500 Hz, 16-bit)
+      responses:
+        "200":
+          description: ECG data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ECGResponse"
+
+  /ecg/{recording_id}/waveform:
+    get:
+      tags: [ECG]
+      summary: Download raw ECG waveform for a specific recording
+      parameters:
+        - name: recording_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv, edf]
+            default: json
+      responses:
+        "200":
+          description: Raw ECG waveform
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ECGWaveform"
+
+  # ── Blood Pressure ────────────────────────────────────────────────────────
+  /blood-pressure:
+    get:
+      tags: [Blood Pressure]
+      summary: Get cuffless blood pressure readings
+      description: |
+        Returns systolic and diastolic blood pressure from HEALTH-RING Ultra.
+        Uses piezoelectric pulse transit time (PPTT) method. Accuracy ±5 mmHg.
+        **Requires HEALTH-RING Ultra.**
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Blood pressure data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodPressureResponse"
+
+  # ── HbA1c ─────────────────────────────────────────────────────────────────
+  /hba1c:
+    get:
+      tags: [Glucose & Metabolic]
+      summary: Get non-invasive HbA1c estimates
+      description: |
+        Returns HbA1c estimates from HEALTH-RING Ultra using 5-wavelength NIR spectroscopy.
+        ARMS ≤0.23% (NGSP/IFCC compliant). **Requires HEALTH-RING Ultra.**
+        Not a replacement for laboratory HbA1c — for wellness monitoring only.
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: HbA1c data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HbA1cResponse"
+
+  # ── Glucose (HEALTH-LAB) ──────────────────────────────────────────────────
+  /glucose:
+    get:
+      tags: [Glucose & Metabolic]
+      summary: Get continuous glucose monitoring data
+      description: |
+        Returns glucose readings from HEALTH-LAB patch. Continuous monitoring every 5 minutes.
+        ISO 15197 compliant (100% Zone A). **Requires HEALTH-LAB.**
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - name: include_alerts
+          in: query
+          schema: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Glucose data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlucoseResponse"
+
+  # ── Biomarkers (HEALTH-LAB) ───────────────────────────────────────────────
+  /biomarkers:
+    get:
+      tags: [Glucose & Metabolic]
+      summary: Get sweat biomarker data (HEALTH-LAB)
+      description: |
+        Returns all available sweat biomarkers: glucose, lactate, sodium, pH, cortisol (Ultra),
+        potassium (Ultra), uric acid (Ultra). **Requires HEALTH-LAB.**
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - name: analytes
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [glucose, lactate, sodium, ph, cortisol, potassium, uric_acid]
+          style: form
+          explode: false
+      responses:
+        "200":
+          description: Biomarker data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BiomarkerResponse"
+
+  # ── Sleep ─────────────────────────────────────────────────────────────────
+  /sleep:
+    get:
+      tags: [Sleep]
+      summary: Get sleep sessions and staging data
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Sleep data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SleepResponse"
+
+  # ── Activity ──────────────────────────────────────────────────────────────
+  /activity:
+    get:
+      tags: [Activity]
+      summary: Get daily activity summaries
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Activity data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityResponse"
+
+  /activity/workouts:
+    get:
+      tags: [Activity]
+      summary: Get workout sessions with sEMG data (HEALTH-BAND Neuro)
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - name: include_semg
+          in: query
+          schema: { type: boolean, default: false }
+          description: Include 8-channel sEMG data (large payload)
+      responses:
+        "200":
+          description: Workout data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkoutResponse"
+
+  # ── Recovery ──────────────────────────────────────────────────────────────
+  /recovery:
+    get:
+      tags: [Recovery]
+      summary: Get daily recovery scores (0–100)
+      description: |
+        Recovery score combines HRV, resting HR, sleep quality, respiratory rate,
+        and skin temperature. Comparable to Whoop Recovery Score.
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Recovery scores
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryResponse"
+
+  # ── Stress ────────────────────────────────────────────────────────────────
+  /stress:
+    get:
+      tags: [Stress]
+      summary: Get stress index from EDA and HRV
+      description: |
+        Stress index (0–100) derived from electrodermal activity (EDA/GSR) and HRV.
+        **Requires HEALTH-BAND Neuro** for EDA data.
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+      responses:
+        "200":
+          description: Stress data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StressResponse"
+
+  # ── Webhooks ──────────────────────────────────────────────────────────────
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: List registered webhooks
+      responses:
+        "200":
+          description: Webhook list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhooks:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Webhook"
+    post:
+      tags: [Webhooks]
+      summary: Register a new webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookCreate"
+      responses:
+        "201":
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Webhook"
+
+  /webhooks/{webhook_id}:
+    delete:
+      tags: [Webhooks]
+      summary: Delete a webhook
+      parameters:
+        - name: webhook_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Webhook deleted
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.eoshealth.io/v1/oauth/authorize
+          tokenUrl: https://api.eoshealth.io/v1/oauth/token
+          scopes:
+            read:health: Read all health metrics
+            read:devices: Read device information
+            read:user: Read user profile
+            write:webhooks: Manage webhooks
+            read:ecg_waveform: Access raw ECG waveform data
+
+  parameters:
+    DeviceId:
+      name: device_id
+      in: path
+      required: true
+      schema: { type: string, example: "eos_ring_abc123" }
+    StartDate:
+      name: start_date
+      in: query
+      schema: { type: string, format: date, example: "2026-06-01" }
+    EndDate:
+      name: end_date
+      in: query
+      schema: { type: string, format: date, example: "2026-06-07" }
+    DeviceFilter:
+      name: device_id
+      in: query
+      schema: { type: string }
+      description: Filter by specific device ID
+    Resolution:
+      name: resolution
+      in: query
+      schema:
+        type: string
+        enum: [raw, 1min, 5min, 15min, 1hour, 1day]
+        default: 1min
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 1000, default: 100 }
+
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token:  { type: string }
+        token_type:    { type: string, example: "Bearer" }
+        expires_in:    { type: integer, example: 3600 }
+        refresh_token: { type: string }
+        scope:         { type: string }
+
+    User:
+      type: object
+      properties:
+        id:           { type: string }
+        email:        { type: string, format: email }
+        display_name: { type: string }
+        created_at:   { type: string, format: date-time }
+        devices:
+          type: array
+          items: { type: string }
+
+    Device:
+      type: object
+      properties:
+        id:           { type: string, example: "eos_ring_abc123" }
+        model:        { type: string, enum: [health-key-ultra, health-band-neuro, health-ring-base, health-ring-ultra, health-lab-base, health-lab-ultra] }
+        serial:       { type: string }
+        firmware_version: { type: string, example: "1.0.0" }
+        hardware_revision: { type: string, example: "1.0" }
+        last_sync:    { type: string, format: date-time }
+        connected:    { type: boolean }
+
+    BatteryStatus:
+      type: object
+      properties:
+        level:        { type: integer, minimum: 0, maximum: 100, example: 78 }
+        charging:     { type: boolean }
+        estimated_days_remaining: { type: number, example: 5.2 }
+        timestamp:    { type: string, format: date-time }
+
+    HeartRateResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp: { type: string, format: date-time }
+              bpm:       { type: integer, minimum: 20, maximum: 300 }
+              confidence: { type: number, minimum: 0, maximum: 1 }
+              device_id: { type: string }
+        next_token: { type: string }
+
+    HeartRateSummary:
+      type: object
+      properties:
+        date:         { type: string, format: date }
+        resting_hr:   { type: integer }
+        max_hr:       { type: integer }
+        min_hr:       { type: integer }
+        avg_hr:       { type: integer }
+        device_id:    { type: string }
+
+    HRVResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp: { type: string, format: date-time }
+              rmssd:     { type: number, description: "Root mean square of successive differences (ms)" }
+              sdnn:      { type: number, description: "Standard deviation of NN intervals (ms)" }
+              pnn50:     { type: number, description: "Percentage of NN intervals >50ms" }
+              lf_hf_ratio: { type: number, description: "LF/HF ratio (sympathovagal balance)" }
+
+    SpO2Response:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:  { type: string, format: date-time }
+              spo2:       { type: number, minimum: 70, maximum: 100, example: 98.2 }
+              confidence: { type: number, minimum: 0, maximum: 1 }
+              device_id:  { type: string }
+
+    ECGResponse:
+      type: object
+      properties:
+        recordings:
+          type: array
+          items:
+            type: object
+            properties:
+              id:           { type: string }
+              timestamp:    { type: string, format: date-time }
+              duration_sec: { type: integer }
+              hr:           { type: integer }
+              hrv_rmssd:    { type: number }
+              afib_detected: { type: boolean }
+              afib_confidence: { type: number, minimum: 0, maximum: 1 }
+              qrs_duration_ms: { type: number }
+              qt_interval_ms:  { type: number }
+              pr_interval_ms:  { type: number }
+              device_id:    { type: string }
+
+    ECGWaveform:
+      type: object
+      properties:
+        recording_id: { type: string }
+        sample_rate:  { type: integer, example: 500 }
+        duration_sec: { type: integer }
+        leads:
+          type: object
+          properties:
+            lead_i:   { type: array, items: { type: integer }, description: "16-bit ADC samples" }
+            lead_ii:  { type: array, items: { type: integer } }
+            lead_iii: { type: array, items: { type: integer }, description: "Derived (III = II - I)" }
+
+    BloodPressureResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:  { type: string, format: date-time }
+              systolic:   { type: integer, example: 118 }
+              diastolic:  { type: integer, example: 76 }
+              map:        { type: number, description: "Mean arterial pressure (mmHg)" }
+              confidence: { type: number, minimum: 0, maximum: 1 }
+              device_id:  { type: string }
+
+    HbA1cResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:  { type: string, format: date-time }
+              hba1c_pct:  { type: number, example: 5.4, description: "HbA1c % (NGSP)" }
+              hba1c_mmol: { type: number, example: 35.5, description: "HbA1c mmol/mol (IFCC)" }
+              confidence: { type: number, minimum: 0, maximum: 1 }
+              disclaimer: { type: string, example: "For wellness monitoring only. Not a replacement for laboratory HbA1c." }
+
+    GlucoseResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:   { type: string, format: date-time }
+              glucose_mgdl: { type: number, example: 94.2 }
+              glucose_mmol: { type: number, example: 5.23 }
+              trend:       { type: string, enum: [rising_fast, rising, stable, falling, falling_fast] }
+              alert:       { type: string, enum: [none, low, high, critical_low, critical_high], nullable: true }
+
+    BiomarkerResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:    { type: string, format: date-time }
+              glucose_mgdl: { type: number, nullable: true }
+              lactate_mmol: { type: number, nullable: true }
+              sodium_mmol:  { type: number, nullable: true }
+              ph:           { type: number, nullable: true }
+              cortisol_ngml: { type: number, nullable: true, description: "Ultra only" }
+              potassium_mmol: { type: number, nullable: true, description: "Ultra only" }
+              uric_acid_mmol: { type: number, nullable: true, description: "Ultra only" }
+
+    SleepResponse:
+      type: object
+      properties:
+        sessions:
+          type: array
+          items:
+            type: object
+            properties:
+              date:           { type: string, format: date }
+              bedtime:        { type: string, format: date-time }
+              wake_time:      { type: string, format: date-time }
+              total_sleep_min: { type: integer }
+              efficiency_pct: { type: number }
+              stages:
+                type: object
+                properties:
+                  awake_min:  { type: integer }
+                  light_min:  { type: integer }
+                  deep_min:   { type: integer }
+                  rem_min:    { type: integer }
+              avg_hr:         { type: integer }
+              avg_spo2:       { type: number }
+              avg_hrv_rmssd:  { type: number }
+              respiratory_rate: { type: number }
+
+    ActivityResponse:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              date:          { type: string, format: date }
+              steps:         { type: integer }
+              calories_kcal: { type: integer }
+              active_min:    { type: integer }
+              distance_km:   { type: number }
+              vo2max:        { type: number, nullable: true }
+
+    WorkoutResponse:
+      type: object
+      properties:
+        workouts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:            { type: string }
+              start_time:    { type: string, format: date-time }
+              end_time:      { type: string, format: date-time }
+              sport:         { type: string }
+              avg_hr:        { type: integer }
+              max_hr:        { type: integer }
+              calories_kcal: { type: integer }
+              semg_channels:
+                type: array
+                nullable: true
+                description: "8-channel sEMG data (HEALTH-BAND Neuro only)"
+                items:
+                  type: object
+                  properties:
+                    channel: { type: integer, minimum: 1, maximum: 8 }
+                    muscle:  { type: string }
+                    avg_activation_pct: { type: number }
+                    fatigue_index: { type: number }
+
+    RecoveryResponse:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              date:           { type: string, format: date }
+              score:          { type: integer, minimum: 0, maximum: 100 }
+              category:       { type: string, enum: [peak, good, moderate, poor] }
+              hrv_rmssd:      { type: number }
+              resting_hr:     { type: integer }
+              sleep_score:    { type: integer }
+              body_temp_delta: { type: number, description: "Deviation from baseline (°C)" }
+
+    StressResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:   { type: string, format: date-time }
+              stress_index: { type: integer, minimum: 0, maximum: 100 }
+              eda_us:      { type: number, description: "Skin conductance (µS)" }
+              hrv_rmssd:   { type: number }
+
+    Webhook:
+      type: object
+      properties:
+        id:         { type: string }
+        url:        { type: string, format: uri }
+        events:     { type: array, items: { type: string } }
+        secret:     { type: string, description: "HMAC-SHA256 signing secret" }
+        active:     { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    WebhookCreate:
+      type: object
+      required: [url, events]
+      properties:
+        url:
+          type: string
+          format: uri
+          example: "https://your-app.com/webhooks/eos-health"
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+              - heart_rate.alert
+              - spo2.alert
+              - afib.detected
+              - glucose.alert
+              - glucose.critical
+              - blood_pressure.alert
+              - device.sync
+              - device.low_battery
+              - device.ota_available
+          example: ["afib.detected", "glucose.alert", "device.sync"]
+
+    Error:
+      type: object
+      properties:
+        error:   { type: string }
+        message: { type: string }
+        code:    { type: integer }
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema: { type: integer }
+        X-RateLimit-Remaining:
+          schema: { type: integer }
+        X-RateLimit-Reset:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

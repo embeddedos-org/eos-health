@@ -1,0 +1,36 @@
+{
+  "name": "@eos-health/api",
+  "version": "1.0.0",
+  "description": "Official JavaScript/TypeScript SDK for the EoS Health Developer API",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": ["health", "wearable", "api", "eos", "ecg", "hrv", "spo2", "glucose"],
+  "author": "EoS Health <api@eoshealth.io>",
+  "license": "MIT",
+  "homepage": "https://developers.eoshealth.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/embeddedos-org/eos-health"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
