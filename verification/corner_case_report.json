@@ -1,0 +1,469 @@
+{
+  "timestamp": "2026-06-02T04:51:52Z",
+  "total": 92,
+  "passed": 92,
+  "failed": 0,
+  "score_pct": 100.0,
+  "results": [
+    {
+      "name": "ECG: Normal sinus rhythm HR in range",
+      "pass": true,
+      "detail": "HR=69.8 bpm"
+    },
+    {
+      "name": "ECG: Bradycardia detection (<60 bpm)",
+      "pass": true,
+      "detail": "HR=50.0 bpm"
+    },
+    {
+      "name": "ECG: Tachycardia detection (>100 bpm)",
+      "pass": true,
+      "detail": "HR=171.4 bpm"
+    },
+    {
+      "name": "ECG: Extreme bradycardia (athlete, 30 bpm)",
+      "pass": true,
+      "detail": "HR=30.0 bpm"
+    },
+    {
+      "name": "ECG: SVT tachycardia (220 bpm)",
+      "pass": true,
+      "detail": "HR=219.8 bpm"
+    },
+    {
+      "name": "ECG: AFib detected from irregular RR",
+      "pass": true,
+      "detail": "confidence=1.00"
+    },
+    {
+      "name": "ECG: Normal rhythm not flagged as AFib",
+      "pass": true,
+      "detail": "confidence=0.02"
+    },
+    {
+      "name": "ECG: Empty RR array returns 0",
+      "pass": true,
+      "detail": "HR=0.0"
+    },
+    {
+      "name": "ECG: Single RR interval returns 0 (insufficient)",
+      "pass": true,
+      "detail": "HR=0.0"
+    },
+    {
+      "name": "ECG: Zero RR interval handled safely",
+      "pass": true,
+      "detail": "HR=104.8"
+    },
+    {
+      "name": "ECG: Pacemaker rhythm has near-zero RMSSD",
+      "pass": true,
+      "detail": "RMSSD=0.00 ms"
+    },
+    {
+      "name": "SpO2: Normal reading 95-100%",
+      "pass": true,
+      "detail": "SpO2=97.5%"
+    },
+    {
+      "name": "SpO2: Hypoxemia detected (<94%)",
+      "pass": true,
+      "detail": "SpO2=92.5%"
+    },
+    {
+      "name": "SpO2: Critical hypoxemia (<90%)",
+      "pass": true,
+      "detail": "SpO2=87.5%"
+    },
+    {
+      "name": "SpO2: Impossible value clamped to 100%",
+      "pass": true,
+      "detail": "SpO2=100.0%"
+    },
+    {
+      "name": "SpO2: Negative R ratio clamped safely",
+      "pass": true,
+      "detail": "SpO2=100.0%"
+    },
+    {
+      "name": "SpO2: Motion artifact flagged (PI>20%)",
+      "pass": true,
+      "detail": "motion=True"
+    },
+    {
+      "name": "SpO2: Clean signal not flagged as motion",
+      "pass": true,
+      "detail": "SpO2=90.0%"
+    },
+    {
+      "name": "SpO2: Dark skin tone \u2014 valid reading",
+      "pass": true,
+      "detail": "SpO2=90.4%"
+    },
+    {
+      "name": "Glucose: Normal fasting (70-100 mg/dL)",
+      "pass": true,
+      "detail": "90.0 mg/dL"
+    },
+    {
+      "name": "Glucose: Post-meal spike detectable",
+      "pass": true,
+      "detail": "192.9 mg/dL"
+    },
+    {
+      "name": "Glucose: Hypoglycemia alert triggered",
+      "pass": true,
+      "detail": "12.9 mg/dL \u2192 critical_low"
+    },
+    {
+      "name": "Glucose: Critical low (<54 mg/dL) alert",
+      "pass": true,
+      "detail": "6.4 mg/dL \u2192 critical_low"
+    },
+    {
+      "name": "Glucose: Hyperglycemia (>250 mg/dL) alert",
+      "pass": true,
+      "detail": "353.6 mg/dL \u2192 critical_high"
+    },
+    {
+      "name": "Glucose: Sensor drift handled (recalibration needed)",
+      "pass": true,
+      "detail": "drifted=32.1 vs baseline=90.0"
+    },
+    {
+      "name": "Glucose: Dry sensor returns 0 (not negative)",
+      "pass": true,
+      "detail": "0.0 mg/dL"
+    },
+    {
+      "name": "Glucose: Acetaminophen interference within \u00b115%",
+      "pass": true,
+      "detail": "error=10.7%"
+    },
+    {
+      "name": "Glucose: Expired patch (>14 days) rejected",
+      "pass": true,
+      "detail": "status=expired"
+    },
+    {
+      "name": "Glucose: Active patch (7 days) accepted",
+      "pass": true,
+      "detail": "status=active"
+    },
+    {
+      "name": "BP: Normal reading (120/80 \u00b110)",
+      "pass": true,
+      "detail": "120/80 mmHg"
+    },
+    {
+      "name": "BP: Hypertension Stage 1 detected (>130)",
+      "pass": true,
+      "detail": "144/93 mmHg"
+    },
+    {
+      "name": "BP: Hypertension Stage 2 detected (>140)",
+      "pass": true,
+      "detail": "162/103 mmHg"
+    },
+    {
+      "name": "BP: Hypotension detected (<90 SBP)",
+      "pass": true,
+      "detail": "75/54 mmHg"
+    },
+    {
+      "name": "BP: Extreme values clamped to safe range",
+      "pass": true,
+      "detail": "220/138 mmHg"
+    },
+    {
+      "name": "BP: Pulse pressure physiologically valid (20-100)",
+      "pass": true,
+      "detail": "PP=40 mmHg"
+    },
+    {
+      "name": "HbA1c: Normal range (4-5.6%)",
+      "pass": true,
+      "detail": "HbA1c=5.2%"
+    },
+    {
+      "name": "HbA1c: Pre-diabetic range (5.7-6.4%)",
+      "pass": true,
+      "detail": "HbA1c=5.9%"
+    },
+    {
+      "name": "HbA1c: Diabetic range (>6.5%)",
+      "pass": true,
+      "detail": "HbA1c=7.4%"
+    },
+    {
+      "name": "HbA1c: Anemia case within valid range",
+      "pass": true,
+      "detail": "HbA1c=5.0%"
+    },
+    {
+      "name": "HbA1c: Extreme values clamped to 15%",
+      "pass": true,
+      "detail": "HbA1c=15.0%"
+    },
+    {
+      "name": "OTA: Normal update succeeds",
+      "pass": true,
+      "detail": "chunks=100"
+    },
+    {
+      "name": "OTA: Low battery (<20%) blocked",
+      "pass": true,
+      "detail": "error=BATTERY_TOO_LOW"
+    },
+    {
+      "name": "OTA: Invalid signature rejected",
+      "pass": true,
+      "detail": "error=SIGNATURE_INVALID"
+    },
+    {
+      "name": "OTA: Downgrade attempt blocked",
+      "pass": true,
+      "detail": "error=VERSION_NOT_NEWER"
+    },
+    {
+      "name": "OTA: Same version blocked",
+      "pass": true,
+      "detail": "error=VERSION_NOT_NEWER"
+    },
+    {
+      "name": "OTA: Corrupt chunk detected (CRC mismatch)",
+      "pass": true,
+      "detail": "chunk=47"
+    },
+    {
+      "name": "OTA: Critical battery (5%) blocked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BLE: Normal connection established",
+      "pass": true,
+      "detail": "MTU=247"
+    },
+    {
+      "name": "BLE: MTU capped at 247 bytes",
+      "pass": true,
+      "detail": "MTU=247"
+    },
+    {
+      "name": "BLE: Weak signal (-100 dBm) rejected",
+      "pass": true,
+      "detail": "error=SIGNAL_TOO_WEAK"
+    },
+    {
+      "name": "BLE: Max reconnect (>10) stops retrying",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BLE: Unregistered device connected (pairing mode)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BLE: Minimum MTU (23) accepted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Buffer: Fills to capacity without crash",
+      "pass": true,
+      "detail": "65536 bytes"
+    },
+    {
+      "name": "Buffer: Overflow evicts oldest record",
+      "pass": true,
+      "detail": "evicted=1"
+    },
+    {
+      "name": "Buffer: Data persists across power cycle",
+      "pass": true,
+      "detail": "records=2048"
+    },
+    {
+      "name": "Buffer: Empty buffer read returns empty list",
+      "pass": true,
+      "detail": "len=0"
+    },
+    {
+      "name": "Buffer: Single byte write succeeds",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Normal active state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Deep sleep when disconnected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Charging state",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Critical shutdown at 2%",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Low battery sleep at 8%",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Thermal shutdown at 65\u00b0C",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Charging overrides low battery",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Power: Normal temp (37\u00b0C body) not shutdown",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: Valid serial accepted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: Invalid prefix rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: Unknown model rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: Short sequence rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: Empty serial rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Provision: All 4 models valid",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Calibration: Linear fit succeeds",
+      "pass": true,
+      "detail": "R\u00b2=1.0000"
+    },
+    {
+      "name": "Calibration: <3 points rejected",
+      "pass": true,
+      "detail": "error=insufficient_points"
+    },
+    {
+      "name": "Calibration: Zero variance (broken sensor) rejected",
+      "pass": true,
+      "detail": "error=zero_variance"
+    },
+    {
+      "name": "API: Valid webhook signature accepted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "API: Tampered payload rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "API: Wrong secret rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "API: Empty signature rejected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "API: Free plan (59/60) allowed",
+      "pass": true,
+      "detail": "remaining=1"
+    },
+    {
+      "name": "API: Free plan (61/60) rate limited",
+      "pass": true,
+      "detail": "over by 1"
+    },
+    {
+      "name": "API: Production plan (1000/1000) allowed",
+      "pass": true,
+      "detail": "remaining=0"
+    },
+    {
+      "name": "API: Production plan (1001/1000) rate limited",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "sEMG: Contraction RMS > noise floor",
+      "pass": true,
+      "detail": "RMS=100.3 \u00b5V"
+    },
+    {
+      "name": "sEMG: Relaxed muscle near noise floor",
+      "pass": true,
+      "detail": "RMS=0.38 \u00b5V"
+    },
+    {
+      "name": "sEMG: SNR > 30 dB during contraction",
+      "pass": true,
+      "detail": "SNR=46.0 dB"
+    },
+    {
+      "name": "sEMG: Empty signal returns 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "TENS: Normal parameters safe",
+      "pass": true,
+      "detail": "charge=1.0 \u00b5C, SAFE"
+    },
+    {
+      "name": "TENS: Excessive charge blocked (>50 \u00b5C)",
+      "pass": true,
+      "detail": "CHARGE_EXCEEDED_50uC"
+    },
+    {
+      "name": "TENS: Excessive amplitude blocked (>20 mA)",
+      "pass": true,
+      "detail": "AMPLITUDE_EXCEEDED_20mA"
+    },
+    {
+      "name": "TENS: Excessive frequency blocked (>150 Hz)",
+      "pass": true,
+      "detail": "FREQUENCY_EXCEEDED_150Hz"
+    },
+    {
+      "name": "TENS: Excessive pulse width blocked (>500 \u00b5s)",
+      "pass": true,
+      "detail": "PULSE_WIDTH_EXCEEDED_500us"
+    }
+  ]
+}
