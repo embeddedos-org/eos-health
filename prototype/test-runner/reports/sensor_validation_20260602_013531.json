@@ -1,0 +1,222 @@
+{
+  "timestamp": "2026-06-02T01:35:31.734461",
+  "mode": "simulation",
+  "device_address": null,
+  "tests": [
+    {
+      "test": "ecg",
+      "passed": true,
+      "checks": [
+        {
+          "name": "HR accuracy (72 bpm)",
+          "passed": true,
+          "detail": "measured=72.1 bpm, error=0.1 bpm"
+        },
+        {
+          "name": "HR accuracy (120 bpm tachycardia)",
+          "passed": true,
+          "detail": "measured=120.1 bpm, error=0.1 bpm"
+        },
+        {
+          "name": "HR accuracy (45 bpm bradycardia)",
+          "passed": true,
+          "detail": "measured=45.0 bpm, error=0.0 bpm"
+        },
+        {
+          "name": "ECG SNR",
+          "passed": true,
+          "detail": "SNR=70.0 dB (spec: \u226540.0 dB)"
+        },
+        {
+          "name": "AFib detection (true positive)",
+          "passed": true,
+          "detail": "AFib correctly detected"
+        },
+        {
+          "name": "AFib specificity (true negative)",
+          "passed": true,
+          "detail": "Normal rhythm correctly classified"
+        }
+      ]
+    },
+    {
+      "test": "spo2",
+      "passed": true,
+      "checks": [
+        {
+          "name": "SpO2 98% (Normal)",
+          "passed": true,
+          "detail": "measured=96.9%, error=1.07%"
+        },
+        {
+          "name": "SpO2 95% (Mild hypoxia)",
+          "passed": true,
+          "detail": "measured=94.1%, error=0.86%"
+        },
+        {
+          "name": "SpO2 90% (Moderate hypoxia)",
+          "passed": true,
+          "detail": "measured=89.6%, error=0.39%"
+        },
+        {
+          "name": "SpO2 85% (Severe hypoxia)",
+          "passed": true,
+          "detail": "measured=84.6%, error=0.36%"
+        },
+        {
+          "name": "SpO2 80% (Critical)",
+          "passed": true,
+          "detail": "measured=80.0%, error=0.05%"
+        },
+        {
+          "name": "SpO2 75% (Extreme)",
+          "passed": true,
+          "detail": "measured=75.1%, error=0.07%"
+        },
+        {
+          "name": "SpO2 ARMS accuracy",
+          "passed": true,
+          "detail": "ARMS=0.60% (spec: \u22642.0%)"
+        }
+      ]
+    },
+    {
+      "test": "hba1c_protocol",
+      "passed": true,
+      "note": "Protocol documented \u2014 requires clinical study"
+    },
+    {
+      "test": "glucose",
+      "passed": true,
+      "checks": [
+        {
+          "name": "Glucose 2.5 mmol/L (Hypoglycemia)",
+          "passed": true,
+          "detail": "measured=2.48, error=0.022 (\u00b10.83 mmol/L)"
+        },
+        {
+          "name": "Glucose 4.0 mmol/L (Low normal)",
+          "passed": true,
+          "detail": "measured=3.97, error=0.033 (\u00b10.83 mmol/L)"
+        },
+        {
+          "name": "Glucose 5.5 mmol/L (Normal fasting)",
+          "passed": true,
+          "detail": "measured=5.43, error=0.065 (\u00b10.83 mmol/L)"
+        },
+        {
+          "name": "Glucose 7.0 mmol/L (High normal)",
+          "passed": true,
+          "detail": "measured=6.95, error=0.049 (\u00b115% = \u00b11.05 mmol/L)"
+        },
+        {
+          "name": "Glucose 10.0 mmol/L (Post-meal)",
+          "passed": true,
+          "detail": "measured=9.96, error=0.045 (\u00b115% = \u00b11.50 mmol/L)"
+        },
+        {
+          "name": "Glucose 15.0 mmol/L (Hyperglycemia)",
+          "passed": true,
+          "detail": "measured=15.03, error=0.029 (\u00b115% = \u00b12.25 mmol/L)"
+        },
+        {
+          "name": "Glucose 20.0 mmol/L (Severe hyperglycemia)",
+          "passed": true,
+          "detail": "measured=19.94, error=0.058 (\u00b115% = \u00b13.00 mmol/L)"
+        },
+        {
+          "name": "ISO 15197 compliance (\u226595% within spec)",
+          "passed": true,
+          "detail": "100% within specification"
+        }
+      ]
+    },
+    {
+      "test": "semg",
+      "passed": true,
+      "checks": [
+        {
+          "name": "Noise floor (resting)",
+          "passed": true,
+          "detail": "0.500 \u00b5V_rms (spec: \u22641.0 \u00b5V_rms)"
+        },
+        {
+          "name": "Signal amplitude (contraction)",
+          "passed": true,
+          "detail": "1549.0 \u00b5V_rms (spec: >50 \u00b5V_rms)"
+        },
+        {
+          "name": "sEMG SNR",
+          "passed": true,
+          "detail": "69.8 dB (spec: \u226530.0 dB)"
+        },
+        {
+          "name": "8-channel cross-talk",
+          "passed": true,
+          "detail": "max correlation=0.236 (spec: <0.3)"
+        },
+        {
+          "name": "sEMG frequency band (20-500 Hz)",
+          "passed": true,
+          "detail": "100.0% of power in 20-500 Hz band"
+        }
+      ]
+    },
+    {
+      "test": "tens_safety",
+      "passed": true,
+      "checks": [
+        {
+          "name": "Charge/pulse (Minimum)",
+          "passed": true,
+          "detail": "0.10 \u00b5C (spec: \u226450 \u00b5C)"
+        },
+        {
+          "name": "Charge/pulse (Typical)",
+          "passed": true,
+          "detail": "1.00 \u00b5C (spec: \u226450 \u00b5C)"
+        },
+        {
+          "name": "Charge/pulse (High)",
+          "passed": true,
+          "detail": "2.00 \u00b5C (spec: \u226450 \u00b5C)"
+        },
+        {
+          "name": "Charge/pulse (Maximum)",
+          "passed": true,
+          "detail": "3.00 \u00b5C (spec: \u226450 \u00b5C)"
+        },
+        {
+          "name": "Max current limit",
+          "passed": true,
+          "detail": "Firmware limit: 15.0 mA (IEC: \u226415 mA)"
+        },
+        {
+          "name": "Max pulse width",
+          "passed": true,
+          "detail": "Firmware limit: 500.0 \u00b5s (spec: \u2264500 \u00b5s)"
+        },
+        {
+          "name": "Output stops on BLE disconnect",
+          "passed": true,
+          "detail": "Verified in firmware: TENS disabled on BLE disconnect"
+        },
+        {
+          "name": "Electrode impedance monitoring",
+          "passed": true,
+          "detail": "Firmware disables TENS if electrode impedance >10 k\u03a9"
+        },
+        {
+          "name": "Thermal cutoff",
+          "passed": true,
+          "detail": "Firmware disables TENS if skin temperature >42\u00b0C"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "overall_pass": true
+  }
+}

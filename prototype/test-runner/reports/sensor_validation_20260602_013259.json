@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-06-02T01:32:59.510026",
+  "mode": "simulation",
+  "device_address": null,
+  "tests": [
+    {
+      "test": "ecg",
+      "passed": true,
+      "checks": [
+        {
+          "name": "HR accuracy (72 bpm)",
+          "passed": 
