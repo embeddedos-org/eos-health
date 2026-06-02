@@ -1,0 +1,12 @@
+{
+  "hba1c": {
+    "metric": "HbA1c",
+    "n": 200,
+    "bias": 0.0546,
+    "bias_ci_95": 0.0397,
+    "sd": 0.2849,
+    "loa_upper": 0.613,
+    "loa_lower": -0.5038,
+    "pearson_r": 0.9892,
+    "pearson_p": 0.0,
+    "proportional_bias": 
