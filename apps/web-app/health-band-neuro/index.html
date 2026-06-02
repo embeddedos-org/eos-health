@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EoS Health-Band Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--card:#111827;--border:#1e3a5f;--accent:#00c6ff;--accent2:#0072ff;--text:#e0f0ff;--muted:#7090b0;--danger:#ff4d6d;--ok:#00d68f}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
+header{background:linear-gradient(135deg,#0d1520,#0a1628);padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.logo{width:44px;height:44px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+.brand h1{font-size:20px;font-weight:700;color:var(--accent)}
+.brand p{font-size:12px;color:var(--muted)}
+.conn-badge{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.conn-badge.connected{background:#0a2a1a;color:var(--ok);border:1px solid var(--ok)}
+.conn-badge.disconnected{background:#1a0a0f;color:var(--danger);border:1px solid var(--danger)}
+main{max-width:1200px;margin:0 auto;padding:24px}
+.vitals-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.vital-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:border-color 0.3s}
+.vital-card.alert{border-color:var(--danger)}
+.vital-card.ok{border-color:var(--ok)}
+.vital-icon{font-size:28px;margin-bottom:8px}
+.vital-value{font-size:36px;font-weight:700;color:var(--accent)}
+.vital-unit{font-size:12px;color:var(--muted)}
+.vital-label{font-size:13px;color:var(--text);margin-top:4px}
+.vital-trend{font-size:11px;color:var(--muted);margin-top:2px}
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+canvas{width:100%;display:block}
+.eeg-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px}
+.eeg-bands{display:flex;gap:12px;align-items:flex-end;height:80px}
+.eeg-band-wrap{flex:1;display:flex;flex-direction:column;align-items:center}
+.eeg-bar{width:100%;background:linear-gradient(to top,var(--accent2),var(--accent));border-radius:4px 4px 0 0;transition:height 0.4s ease}
+.eeg-band-label{font-size:11px;color:var(--muted);margin-top:4px}
+.eeg-band-val{font-size:10px;color:var(--accent);margin-top:2px}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--muted)}
+.info-val{color:var(--text);font-weight:600}
+.alert-list{max-height:160px;overflow-y:auto}
+.alert-item{padding:6px 8px;border-radius:6px;font-size:12px;margin-bottom:4px}
+.alert-item.warn{background:#1a1000;color:#ffb347;border:1px solid #8b5e00}
+.alert-item.crit{background:#1a0a0f;color:var(--danger);border:1px solid var(--danger)}
+.alert-item.ok{background:#0a1a10;color:var(--ok);border:1px solid #006644}
+.controls{display:flex;gap:12px;flex-wrap:wrap}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+.btn:active{opacity:0.8}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff}
+.btn-danger{background:linear-gradient(135deg,#c0392b,var(--danger));color:#fff}
+.btn-secondary{background:var(--border);color:var(--text)}
+@media(max-width:768px){.charts-grid,.bottom-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">&#x1F493;</div>
+  <div class="brand"><h1>Health-Band Dashboard</h1><p>HEALTH-BAND-Neuro v1.8.0 — Real-time Biosignal Monitor</p></div>
+  <div class="conn-badge connected" id="connBadge">&#x25CF; Connected</div>
+</header>
+<main>
+  <div class="vitals-row">
+    <div class="vital-card" id="hrCard"><div class="vital-icon">&#x1F493;</div><div class="vital-value" id="hrVal">72</div><div class="vital-unit">BPM</div><div class="vital-label">Heart Rate</div><div class="vital-trend" id="hrTrend">Normal sinus rhythm</div></div>
+    <div class="vital-card" id="spo2Card"><div class="vital-icon">&#x1F7E2;</div><div class="vital-value" id="spo2Val">98</div><div class="vital-unit">%</div><div class="vital-label">SpO2</div><div class="vital-trend" id="spo2Trend">Normal</div></div>
+    <div class="vital-card" id="tempCard"><div class="vital-icon">&#x1F321;</div><div class="vital-value" id="tempVal">36.6</div><div class="vital-unit">°C</div><div class="vital-label">Body Temp</div><div class="vital-trend" id="tempTrend">Normal</div></div>
+    <div class="vital-card" id="hrvCard"><div class="vital-icon">&#x1F4CA;</div><div class="vital-value" id="hrvVal">45</div><div class="vital-unit">ms</div><div class="vital-label">HRV RMSSD</div><div class="vital-trend" id="hrvTrend">Good recovery</div></div>
+    <div class="vital-card" id="emgCard"><div class="vital-icon">&#x1F4AA;</div><div class="vital-value" id="emgVal">12</div><div class="vital-unit">%MVC</div><div class="vital-label">sEMG Activity</div><div class="vital-trend" id="emgTrend">Resting</div></div>
+    <div class="vital-card" id="stepsCard"><div class="vital-icon">&#x1F6B6;</div><div class="vital-value" id="stepsVal">4821</div><div class="vital-unit">steps</div><div class="vital-label">Daily Steps</div><div class="vital-trend" id="stepsTrend">48% of goal</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card"><div class="chart-title">Live ECG — Lead II</div><canvas id="ecgCanvas" height="100"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Heart Rate (24h)</div><canvas id="hrChart" height="100"></canvas></div>
+  </div>
+  <div class="eeg-section">
+    <div class="chart-title">EEG Band Power Spectrum</div>
+    <div class="eeg-bands">
+      <div class="eeg-band-wrap"><div class="eeg-bar" id="b-delta" style="height:40px"></div><div class="eeg-band-label">Delta (0.5-4Hz)</div><div class="eeg-band-val" id="v-delta">38%</div></div>
+      <div class="eeg-band-wrap"><div class="eeg-bar" id="b-theta" style="height:25px"></div><div class="eeg-band-label">Theta (4-8Hz)</div><div class="eeg-band-val" id="v-theta">22%</div></div>
+      <div class="eeg-band-wrap"><div class="eeg-bar" id="b-alpha" style="height:35px"></div><div class="eeg-band-label">Alpha (8-13Hz)</div><div class="eeg-band-val" id="v-alpha">31%</div></div>
+      <div class="eeg-band-wrap"><div class="eeg-bar" id="b-beta" style="height:18px"></div><div class="eeg-band-label">Beta (13-30Hz)</div><div class="eeg-band-val" id="v-beta">16%</div></div>
+      <div class="eeg-band-wrap"><div class="eeg-bar" id="b-gamma" style="height:10px"></div><div class="eeg-band-label">Gamma (30-100Hz)</div><div class="eeg-band-val" id="v-gamma">8%</div></div>
+    </div>
+  </div>
+  <div class="bottom-grid">
+    <div class="info-card">
+      <div class="chart-title">GPS & Activity</div>
+      <div class="info-row"><span class="info-key">Location</span><span class="info-val" id="gpsLoc">37.7749°N, 122.4194°W</span></div>
+      <div class="info-row"><span class="info-key">Altitude</span><span class="info-val" id="gpsAlt">16.2m</span></div>
+      <div class="info-row"><span class="info-key">Speed</span><span class="info-val" id="gpsSpeed">0.0 km/h</span></div>
+      <div class="info-row"><span class="info-key">Calories</span><span class="info-val" id="calories">312 kcal</span></div>
+      <div class="info-row"><span class="info-key">Active Time</span><span class="info-val" id="activeTime">1h 24m</span></div>
+      <div class="info-row"><span class="info-key">Sleep Score</span><span class="info-val" id="sleepScore">82 / 100</span></div>
+    </div>
+    <div class="info-card">
+      <div class="chart-title">Alerts</div>
+      <div class="alert-list" id="alertList">
+        <div class="alert-item ok">&#x2714; All vitals normal — 09:42</div>
+        <div class="alert-item warn">&#x26A0; Elevated HR (108 BPM) during workout — 08:15</div>
+        <div class="alert-item ok">&#x2714; Sleep quality: 7h 12m deep sleep — 07:00</div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn btn-primary" id="btnRecord">&#x23FA; Start Recording</button>
+    <button class="btn btn-secondary" id="btnExport">&#x1F4E5; Export CSV</button>
+    <button class="btn btn-secondary" id="btnCalibrate">&#x2699; Calibrate</button>
+    <button class="btn btn-danger" id="btnEmergency">&#x1F6A8; Emergency SOS</button>
+  </div>
+</main>
+<script>
+// ECG simulation
+const ecgCanvas = document.getElementById('ecgCanvas');
+const ec = ecgCanvas.getContext('2d');
+ecgCanvas.width = ecgCanvas.offsetWidth || 600;
+const EW = ecgCanvas.width, EH = 100;
+let ecgBuf = new Array(EW).fill(EH/2), ecgT = 0;
+function simECG(t) {
+  const p = (t % 1.0);
+  if (p < 0.08) return EH/2 + 3*Math.sin(p*Math.PI/0.08);
+  if (p < 0.14) return EH/2 - (EH*0.38)*(p-0.08)/0.06;
+  if (p < 0.17) return EH/2 + (EH*0.12)*(p-0.14)/0.03;
+  if (p < 0.25) return EH/2 + 3*Math.sin((p-0.17)*Math.PI/0.08);
+  return EH/2 + 2*Math.sin(p*6.28);
+}
+function drawECG() {
+  ecgT += 0.018;
+  ecgBuf.shift(); ecgBuf.push(simECG(ecgT));
+  ec.fillStyle='#0d1520'; ec.fillRect(0,0,EW,EH);
+  ec.strokeStyle='#00ff88'; ec.lineWidth=1.5; ec.beginPath();
+  ecgBuf.forEach((y,x)=>x===0?ec.moveTo(x,y):ec.lineTo(x,y)); ec.stroke();
+}
+// HR chart
+const hrCanvas = document.getElementById('hrChart');
+const hc = hrCanvas.getContext('2d');
+hrCanvas.width = hrCanvas.offsetWidth || 300;
+const HW = hrCanvas.width, HH = 100;
+const hrHistory = Array.from({length:24},(_,i)=>60+Math.round(Math.sin(i/3)*15+Math.random()*5));
+function drawHRChart() {
+  hc.fillStyle='#111827'; hc.fillRect(0,0,HW,HH);
+  const max=Math.max(...hrHistory)+10, min=Math.min(...hrHistory)-10;
+  hc.strokeStyle='#0072ff'; hc.lineWidth=2; hc.beginPath();
+  hrHistory.forEach((v,i)=>{
+    const x=i*(HW/(hrHistory.length-1)), y=HH-(v-min)/(max-min)*HH;
+    i===0?hc.moveTo(x,y):hc.lineTo(x,y);
+  }); hc.stroke();
+  hc.strokeStyle='rgba(0,114,255,0.2)'; hc.lineWidth=1;
+  [60,80,100].forEach(v=>{
+    const y=HH-(v-min)/(max-min)*HH;
+    hc.beginPath(); hc.moveTo(0,y); hc.lineTo(HW,y); hc.stroke();
+  });
+}
+// Vitals update
+let steps = 4821, calories = 312;
+function updateVitals() {
+  const now = Date.now();
+  const hr = 65 + Math.round(Math.sin(now/4000)*10);
+  const spo2 = 97 + Math.round(Math.sin(now/7000)*1.5);
+  const temp = (36.6 + Math.sin(now/9000)*0.3).toFixed(1);
+  const hrv = 40 + Math.round(Math.sin(now/5000)*15);
+  const emg = 8 + Math.round(Math.abs(Math.sin(now/2000))*20);
+  steps += Math.round(Math.random()*2);
+  calories = Math.round(steps * 0.065);
+  document.getElementById('hrVal').textContent = hr;
+  document.getElementById('spo2Val').textContent = spo2;
+  document.getElementById('tempVal').textContent = temp;
+  document.getElementById('hrvVal').textContent = hrv;
+  document.getElementById('emgVal').textContent = emg;
+  document.getElementById('stepsVal').textContent = steps.toLocaleString();
+  document.getElementById('stepsTrend').textContent = Math.round(steps/10000*100)+'% of goal';
+  document.getElementById('calories').textContent = calories + ' kcal';
+  document.getElementById('hrCard').className = 'vital-card' + (hr>100||hr<50?' alert':' ok');
+  document.getElementById('spo2Card').className = 'vital-card' + (spo2<94?' alert':' ok');
+  const bands = ['delta','theta','alpha','beta','gamma'];
+  const base = [38,22,31,16,8];
+  bands.forEach((b,i)=>{
+    const v = Math.max(5, base[i]+Math.round(Math.sin(now/3000+i)*8));
+    document.getElementById('b-'+b).style.height = v+'px';
+    document.getElementById('v-'+b).textContent = v+'%';
+  });
+  const lat = (37.7749+Math.sin(now/10000)*0.001).toFixed(5);
+  const lon = (122.4194+Math.cos(now/10000)*0.001).toFixed(5);
+  document.getElementById('gpsLoc').textContent = lat+'°N, '+lon+'°W';
+  document.getElementById('gpsAlt').textContent = (16+Math.sin(now/8000)*2).toFixed(1)+'m';
+}
+let recording = false;
+document.getElementById('btnRecord').addEventListener('click', () => {
+  recording = !recording;
+  const btn = document.getElementById('btnRecord');
+  btn.textContent = recording ? '⏹ Stop Recording' : '⏺ Start Recording';
+  btn.style.background = recording ? 'linear-gradient(135deg,#c0392b,#ff4d6d)' : '';
+});
+document.getElementById('btnExport').addEventListener('click', () => {
+  const csv = 'timestamp,hr,spo2,temp,hrv
+' + hrHistory.map((v,i)=>`${i}:00,${v},98,36.6,45`).join('
+');
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'healthband_export.csv'; a.click();
+});
+document.getElementById('btnEmergency').addEventListener('click', () => {
+  alert('EMERGENCY SOS — Contacting emergency services and sharing GPS location...');
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+setInterval(drawECG, 40);
+setInterval(updateVitals, 1000);
+drawHRChart();
+updateVitals();
+</script>
+</body>
+</html>

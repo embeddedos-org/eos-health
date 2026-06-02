@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthKey Authenticator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 340px; min-height: 480px; background: #0f172a; color: #e2e8f0; font-family: -apple-system, sans-serif; }
+  .header { background: linear-gradient(135deg, #0ea5e9, #6366f1); padding: 16px; display: flex; align-items: center; gap: 10px; }
+  .header h1 { font-size: 15px; font-weight: 700; }
+  .header .badge { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+  .status-bar { background: #1e293b; padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.connected { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .dot.disconnected { background: #ef4444; }
+  .status-text { font-size: 12px; color: #94a3b8; }
+  .section { padding: 12px 16px; }
+  .section-title { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .auth-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .auth-btn { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .auth-btn:hover { background: #334155; border-color: #0ea5e9; }
+  .auth-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .auth-btn .label { font-size: 11px; color: #94a3b8; }
+  .totp-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+  .totp-code { font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #0ea5e9; text-align: center; font-family: monospace; }
+  .totp-timer { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .timer-bar { flex: 1; height: 4px; background: #334155; border-radius: 2px; overflow: hidden; }
+  .timer-fill { height: 100%; background: #0ea5e9; transition: width 1s linear; }
+  .timer-text { font-size: 11px; color: #64748b; min-width: 20px; text-align: right; }
+  .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .health-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px; }
+  .health-card .val { font-size: 20px; font-weight: 700; color: #22c55e; }
+  .health-card .unit { font-size: 10px; color: #64748b; }
+  .health-card .name { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .btn-primary { width: 100%; background: #0ea5e9; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #0284c7; }
+  .btn-primary:active { transform: scale(0.98); }
+  .result-toast { background: #064e3b; border: 1px solid #22c55e; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #86efac; display: none; margin-top: 8px; }
+  .divider { height: 1px; background: #1e293b; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span style="font-size:22px">🔑</span>
+  <div>
+    <h1>HealthKey Authenticator</h1>
+    <span class="badge">v1.4.0</span>
+  </div>
+</div>
+<div class="status-bar">
+  <div class="dot disconnected" id="statusDot"></div>
+  <span class="status-text" id="statusText">Device not connected</span>
+  <button onclick="connectDevice()" style="margin-left:auto;background:#0ea5e9;color:#fff;border:none;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;">Connect</button>
+</div>
+<div class="section">
+  <div class="section-title">Authenticate</div>
+  <div class="auth-grid">
+    <div class="auth-btn" onclick="auth('fingerprint')"><span class="icon">👆</span><span class="label">Fingerprint</span></div>
+    <div class="auth-btn" onclick="auth('nfc')"><span class="icon">📡</span><span class="label">NFC Tap</span></div>
+    <div class="auth-btn" onclick="auth('totp')"><span class="icon">🔢</span><span class="label">TOTP</span></div>
+  </div>
+  <div class="result-toast" id="authResult"></div>
+</div>
+<div class="divider"></div>
+<div class="section">
+  <div class="section-title">TOTP Code</div>
+  <div class="totp-card">
+    <div class="totp-code" id="totpCode">------</div>
+    <div class="totp-timer">
+      <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+      <div class="timer-text" id="timerText">30s</div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="section">
+  <div class="section-title">Health Vitals</div>
+  <div class="health-grid">
+    <div class="health-card"><div class="val" id="heartRate">--</div><div class="unit">BPM</div><div class="name">Heart Rate</div></div>
+    <div class="health-card"><div class="val" id="spo2">--</div><div class="unit">%</div><div class="name">SpO2</div></div>
+    <div class="health-card"><div class="val" id="steps">--</div><div class="unit">steps</div><div class="name">Today</div></div>
+    <div class="health-card"><div class="val" id="battery">--</div><div class="unit">%</div><div class="name">Battery</div></div>
+  </div>
+</div>
+<div class="section">
+  <button class="btn-primary" onclick="syncDevice()">⟳ Sync Device</button>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

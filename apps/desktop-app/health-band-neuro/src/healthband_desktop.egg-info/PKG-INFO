@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: healthband-desktop
+Version: 1.8.0
+Requires-Dist: numpy
+Requires-Dist: scipy
+Dynamic: requires-dist

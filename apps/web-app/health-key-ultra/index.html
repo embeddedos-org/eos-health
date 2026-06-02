@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthKey Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  nav{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;height:56px;display:flex;align-items:center;gap:16px}
+  nav h1{font-size:18px;font-weight:700;color:#0ea5e9}
+  nav .badge{background:#0ea5e9;color:#fff;padding:2px 8px;border-radius:12px;font-size:11px}
+  .tabs{display:flex;gap:4px;margin-left:auto}
+  .tab{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:#94a3b8;border:none;background:transparent}
+  .tab.active{background:#0ea5e9;color:#fff}
+  .container{max-width:1100px;margin:0 auto;padding:24px 16px}
+  .grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px}
+  .card .label{font-size:12px;color:#64748b;margin-bottom:4px}
+  .card .value{font-size:28px;font-weight:700}
+  .card .unit{font-size:13px;color:#94a3b8;margin-left:4px}
+  .card .trend{font-size:11px;margin-top:6px}
+  .trend.up{color:#22c55e} .trend.down{color:#ef4444} .trend.ok{color:#0ea5e9}
+  .section-title{font-size:14px;font-weight:600;color:#94a3b8;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em}
+  .auth-panel{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:24px}
+  .auth-methods{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .auth-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px 20px;cursor:pointer;color:#e2e8f0;font-size:13px;display:flex;align-items:center;gap:8px;transition:all 0.15s}
+  .auth-btn:hover{border-color:#0ea5e9;background:#0ea5e922}
+  .auth-btn.active{border-color:#22c55e;background:#064e3b}
+  .totp-display{background:#0f172a;border-radius:8px;padding:16px;text-align:center}
+  .totp-code{font-size:40px;font-weight:700;letter-spacing:8px;color:#0ea5e9;font-family:monospace}
+  .progress-bar{height:4px;background:#334155;border-radius:2px;overflow:hidden;margin-top:8px}
+  .progress-fill{height:100%;background:#0ea5e9;transition:width 1s linear}
+  .chart-area{background:#0f172a;border-radius:8px;padding:12px;height:160px;position:relative;overflow:hidden}
+  canvas{width:100%!important;height:100%!important}
+  .event-list{list-style:none}
+  .event-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1e293b}
+  .event-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .event-dot.green{background:#22c55e} .event-dot.blue{background:#0ea5e9} .event-dot.yellow{background:#eab308}
+  .event-time{font-size:11px;color:#64748b;min-width:50px}
+  .event-text{font-size:13px}
+  .page{display:none} .page.active{display:block}
+  .device-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:12px}
+  .device-icon{font-size:32px}
+  .device-info h3{font-size:14px;font-weight:600}
+  .device-info p{font-size:12px;color:#64748b;margin-top:2px}
+  .device-status{margin-left:auto;padding:4px 12px;border-radius:12px;font-size:12px}
+  .device-status.connected{background:#064e3b;color:#22c55e}
+  .device-status.disconnected{background:#450a0a;color:#ef4444}
+  .settings-row{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid #1e293b}
+  .settings-row label{flex:1;font-size:13px}
+  .settings-row .desc{font-size:11px;color:#64748b;margin-top:2px}
+  .toggle{width:44px;height:24px;background:#334155;border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s}
+  .toggle.on{background:#0ea5e9}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left 0.2s}
+  .toggle.on::after{left:22px}
+</style>
+</head>
+<body>
+<nav>
+  <span style="font-size:24px">🔑</span>
+  <h1>HealthKey Dashboard</h1>
+  <span class="badge">v1.4.0</span>
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="tab" onclick="showPage('auth',this)">Auth</button>
+    <button class="tab" onclick="showPage('devices',this)">Devices</button>
+    <button class="tab" onclick="showPage('settings',this)">Settings</button>
+  </div>
+</nav>
+<div class="container">
+
+  <!-- Dashboard Page -->
+  <div class="page active" id="page-dashboard">
+    <div class="grid-4">
+      <div class="card"><div class="label">Heart Rate</div><div><span class="value" id="hr">72</span><span class="unit">BPM</span></div><div class="trend ok" id="hrTrend">Normal range</div></div>
+      <div class="card"><div class="label">SpO2</div><div><span class="value" id="spo2">98.2</span><span class="unit">%</span></div><div class="trend up" id="spo2Trend">↑ Excellent</div></div>
+      <div class="card"><div class="label">Steps Today</div><div><span class="value" id="steps">6,842</span></div><div class="trend ok" id="stepsTrend">68% of goal</div></div>
+      <div class="card"><div class="label">Auth Events</div><div><span class="value" id="authCount">14</span></div><div class="trend up">↑ 3 today</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+      <div class="card">
+        <div class="section-title">Heart Rate (24h)</div>
+        <div class="chart-area"><canvas id="hrChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Recent Events</div>
+        <ul class="event-list" id="eventList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Page -->
+  <div class="page" id="page-auth">
+    <div class="auth-panel">
+      <div class="section-title">Authentication Methods</div>
+      <div class="auth-methods">
+        <button class="auth-btn" id="btnFp" onclick="authenticate('fingerprint')">👆 Fingerprint</button>
+        <button class="auth-btn" id="btnNfc" onclick="authenticate('nfc')">📡 NFC Tap</button>
+        <button class="auth-btn" id="btnTotp" onclick="authenticate('totp')">🔢 TOTP</button>
+      </div>
+      <div class="totp-display">
+        <div class="totp-code" id="totpCode">--- ---</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px">Refreshes every 30 seconds</div>
+        <div class="progress-bar"><div class="progress-fill" id="totpProgress" style="width:100%"></div></div>
+      </div>
+      <div id="authMsg" style="margin-top:12px;padding:10px;border-radius:8px;font-size:13px;display:none"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Auth History</div>
+      <ul class="event-list" id="authHistory"></ul>
+    </div>
+  </div>
+
+  <!-- Devices Page -->
+  <div class="page" id="page-devices">
+    <div class="device-card">
+      <div class="device-icon">⌚</div>
+      <div class="device-info">
+        <h3>HealthKey-Ulta</h3>
+        <p>Firmware v1.4.0 · Battery 87% · BLE 5.2</p>
+      </div>
+      <span class="device-status connected">Connected</span>
+    </div>
+    <div class="device-card">
+      <div class="device-icon">📱</div>
+      <div class="device-info">
+        <h3>iPhone 15 Pro</h3>
+        <p>iOS 17.4 · Companion App v2.1</p>
+      </div>
+      <span class="device-status connected">Paired</span>
+    </div>
+    <div class="device-card">
+      <div class="device-icon">💻</div>
+      <div class="device-info">
+        <h3>MacBook Pro</h3>
+        <p>macOS 14.4 · Extension v1.4.0</p>
+      </div>
+      <span class="device-status disconnected">Offline</span>
+    </div>
+  </div>
+
+  <!-- Settings Page -->
+  <div class="page" id="page-settings">
+    <div class="card">
+      <div class="section-title">Authentication Settings</div>
+      <div class="settings-row"><div><div>Fingerprint Auth</div><div class="desc">Use fingerprint sensor for authentication</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="settings-row"><div><div>NFC Authentication</div><div class="desc">Tap device to authenticate</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="settings-row"><div><div>TOTP Codes</div><div class="desc">Time-based one-time passwords</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="settings-row"><div><div>Auto-fill OTP</div><div class="desc">Automatically fill OTP fields on websites</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="settings-row"><div><div>Health Monitoring</div><div class="desc">Continuous heart rate and SpO2 tracking</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Live vitals simulation
+function updateVitals() {
+  const hr = Math.floor(65 + Math.random() * 20);
+  const spo2 = (97 + Math.random() * 2).toFixed(1);
+  const steps = Math.floor(6000 + Math.random() * 3000);
+  document.getElementById('hr').textContent = hr;
+  document.getElementById('spo2').textContent = spo2;
+  document.getElementById('steps').textContent = steps.toLocaleString();
+  document.getElementById('hrTrend').textContent = hr < 80 ? 'Normal range' : hr < 100 ? 'Elevated' : 'High';
+}
+setInterval(updateVitals, 3000);
+
+// Heart rate chart
+function drawChart() {
+  const canvas = document.getElementById('hrChart');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = canvas.offsetHeight || 140;
+  const w = canvas.width, h = canvas.height;
+  const pts = Array.from({length:48}, (_,i) => ({ x: (i/(47))*(w-20)+10, y: h - (Math.floor(60+Math.random()*30)/100)*h - 10 }));
+  ctx.clearRect(0,0,w,h);
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'rgba(14,165,233,0.3)');
+  grad.addColorStop(1,'rgba(14,165,233,0)');
+  ctx.beginPath(); ctx.moveTo(pts[0].x, h);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, h);
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle='#0ea5e9'; ctx.lineWidth=2; ctx.stroke();
+}
+drawChart();
+
+// Events
+const events = [
+  {dot:'green', time:'09:14', text:'Fingerprint auth — Chrome'},
+  {dot:'blue',  time:'09:02', text:'TOTP generated — GitHub'},
+  {dot:'green', time:'08:47', text:'NFC tap — MacBook unlock'},
+  {dot:'yellow',time:'08:30', text:'Device sync completed'},
+  {dot:'green', time:'08:15', text:'Fingerprint auth — Slack'},
+];
+const el = document.getElementById('eventList');
+events.forEach(e => {
+  el.innerHTML += `<li class="event-item"><div class="event-dot ${e.dot}"></div><span class="event-time">${e.time}</span><span class="event-text">${e.text}</span></li>`;
+});
+
+// TOTP timer
+function updateTOTP() {
+  const now = Math.floor(Date.now()/1000);
+  const remaining = 30 - (now % 30);
+  const pct = (remaining/30)*100;
+  document.getElementById('totpProgress').style.width = pct + '%';
+  if (remaining === 30 || document.getElementById('totpCode').textContent === '--- ---') {
+    const code = Math.floor(100000 + Math.random()*900000).toString();
+    document.getElementById('totpCode').textContent = code.slice(0,3)+' '+code.slice(3);
+  }
+}
+updateTOTP(); setInterval(updateTOTP, 1000);
+
+// Auth
+const authHistory = [];
+function authenticate(method) {
+  const btn = document.getElementById('btn' + method.charAt(0).toUpperCase() + method.slice(1));
+  btn.classList.add('active');
+  setTimeout(() => btn.classList.remove('active'), 1500);
+  const success = Math.random() > 0.05;
+  const msg = document.getElementById('authMsg');
+  msg.style.display = 'block';
+  if (success) {
+    msg.style.background = '#064e3b'; msg.style.color = '#86efac';
+    msg.textContent = '✓ Authenticated via ' + method + ' at ' + new Date().toLocaleTimeString();
+  } else {
+    msg.style.background = '#450a0a'; msg.style.color = '#fca5a5';
+    msg.textContent = '✗ Authentication failed — retry';
+  }
+  authHistory.unshift({dot: success?'green':'red', time: new Date().toLocaleTimeString(), text: (success?'✓':'✗') + ' ' + method + ' auth'});
+  const hl = document.getElementById('authHistory');
+  hl.innerHTML = authHistory.slice(0,8).map(e => `<li class="event-item"><div class="event-dot ${e.dot}"></div><span class="event-time">${e.time}</span><span class="event-text">${e.text}</span></li>`).join('');
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

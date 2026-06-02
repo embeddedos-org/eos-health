@@ -1,0 +1,11 @@
+setup.py
+src/healthband_desktop/__init__.py
+src/healthband_desktop/ecg.py
+src/healthband_desktop/eeg.py
+src/healthband_desktop/gps.py
+src/healthband_desktop/vitals.py
+src/healthband_desktop.egg-info/PKG-INFO
+src/healthband_desktop.egg-info/SOURCES.txt
+src/healthband_desktop.egg-info/dependency_links.txt
+src/healthband_desktop.egg-info/requires.txt
+src/healthband_desktop.egg-info/top_level.txt

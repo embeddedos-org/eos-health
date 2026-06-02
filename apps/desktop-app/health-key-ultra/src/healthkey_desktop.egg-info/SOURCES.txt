@@ -1,0 +1,10 @@
+setup.py
+src/healthkey_desktop/__init__.py
+src/healthkey_desktop/biometric.py
+src/healthkey_desktop/crypto.py
+src/healthkey_desktop/health_monitor.py
+src/healthkey_desktop/session.py
+src/healthkey_desktop.egg-info/PKG-INFO
+src/healthkey_desktop.egg-info/SOURCES.txt
+src/healthkey_desktop.egg-info/dependency_links.txt
+src/healthkey_desktop.egg-info/top_level.txt

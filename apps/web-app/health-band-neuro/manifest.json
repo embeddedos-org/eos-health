@@ -1,0 +1,9 @@
+{
+  "name": "EoS Health-Band Dashboard",
+  "short_name": "HealthBand",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#00c6ff",
+  "icons": [{"src": "icon192.png", "sizes": "192x192", "type": "image/png"}]
+}
