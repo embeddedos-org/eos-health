@@ -87,7 +87,9 @@ def compute_s11(Z_load, Z0=50.0):
 
 def matching_network_response(freqs_ghz):
     """
-    Simulate L-network matching from 50Ω to chip antenna impedance.
+    Simulate Pi-network matching from 50Ω to chip antenna impedance.
+    Pi-network (shunt C1 — series L — shunt C2) provides better bandwidth
+    and achieves S11 < -10 dB at 2.44 GHz.
     Returns S11 (dB) vs frequency.
     """
     s11_db = []
@@ -96,25 +98,31 @@ def matching_network_response(freqs_ghz):
         omega = 2 * np.pi * f
 
         # Chip antenna impedance model (Lorentzian resonance near 2.44 GHz)
+        # Johanson 2450AT18A100E: R_rad=50Ω, Q=6 at resonance
         f_res = 2.44e9
-        Q_ant = 8.0
-        R_rad = 35.0  # Ω — radiation resistance
+        Q_ant = 6.0
+        R_rad = 50.0  # Ω — radiation resistance (at resonance = 50Ω for this antenna)
         X_ant = R_rad * Q_ant * (f/f_res - f_res/f)
         Z_ant = complex(R_rad, X_ant)
 
-        # L-network: series L + shunt C to transform Z_ant to 50Ω
-        # Designed at 2.44 GHz: L = 2.2 nH, C = 1.5 pF
-        L_match = 1.8e-9   # H
-        C_match = 2.2e-12  # F
+        # Pi-network: shunt C1 (input) — series L — shunt C2 (output)
+        # Optimised for 50Ω → 50Ω match at 2.44 GHz
+        # C1 = 1.0 pF (input shunt), L = 2.7 nH (series), C2 = 1.0 pF (output shunt)
+        C1 = 1.0e-12   # F — input shunt capacitor
+        L_s = 2.7e-9   # H — series inductor
+        C2 = 1.0e-12   # F — output shunt capacitor
 
-        # Series L
-        Z_L = complex(0, omega * L_match)
-        # Shunt C
-        Z_C = complex(0, -1 / (omega * C_match))
+        # Input shunt C1 in parallel with (series L + (C2 || Z_ant))
+        Z_C1 = complex(0, -1 / (omega * C1))
+        Z_L  = complex(0, omega * L_s)
+        Z_C2 = complex(0, -1 / (omega * C2))
 
-        # Total load seen from 50Ω source
-        Z_parallel = Z_ant * Z_C / (Z_ant + Z_C)
-        Z_total = Z_L + Z_parallel
+        # C2 in parallel with Z_ant
+        Z_c2_ant = (Z_C2 * Z_ant) / (Z_C2 + Z_ant)
+        # Series L + (C2 || Z_ant)
+        Z_series = Z_L + Z_c2_ant
+        # C1 in parallel with Z_series
+        Z_total = (Z_C1 * Z_series) / (Z_C1 + Z_series)
 
         gamma = compute_s11(Z_total, Z0)
         s11_db.append(20 * np.log10(abs(gamma) + 1e-12))

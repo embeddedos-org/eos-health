@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-02T04:51:52Z",
+  "timestamp": "2026-06-02T06:13:51Z",
   "total": 92,
   "passed": 92,
   "failed": 0,
@@ -423,17 +423,17 @@
     {
       "name": "sEMG: Contraction RMS > noise floor",
       "pass": true,
-      "detail": "RMS=100.3 \u00b5V"
+      "detail": "RMS=101.1 \u00b5V"
     },
     {
       "name": "sEMG: Relaxed muscle near noise floor",
       "pass": true,
-      "detail": "RMS=0.38 \u00b5V"
+      "detail": "RMS=0.39 \u00b5V"
     },
     {
       "name": "sEMG: SNR > 30 dB during contraction",
       "pass": true,
-      "detail": "SNR=46.0 dB"
+      "detail": "SNR=46.1 dB"
     },
     {
       "name": "sEMG: Empty signal returns 0",
