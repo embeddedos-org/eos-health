@@ -1,0 +1,306 @@
+{
+  "timestamp": "2026-06-02T22:31:19.305243+00:00",
+  "version": "2.0",
+  "devices": [
+    "health-key-ultra",
+    "health-band-neuro",
+    "health-ring",
+    "health-lab"
+  ],
+  "scenarios_run": 5,
+  "scenarios_passed": 4,
+  "all_passed": false,
+  "results": {
+    "scenario_1": {
+      "scenario": "ble_pairing",
+      "passed": true,
+      "details": {
+        "health-key-ultra": {
+          "paired": true,
+          "pairing_time_ms": 986,
+          "rssi_dbm": -68,
+          "mtu_bytes": 247,
+          "ble_version": "5.3",
+          "gatt_services": [
+            "health_monitoring",
+            "device_info",
+            "battery",
+            "ota_update"
+          ],
+          "passed": true
+        },
+        "health-band-neuro": {
+          "paired": true,
+          "pairing_time_ms": 1217,
+          "rssi_dbm": -53,
+          "mtu_bytes": 247,
+          "ble_version": "5.3",
+          "gatt_services": [
+            "health_monitoring",
+            "device_info",
+            "battery",
+            "ota_update"
+          ],
+          "passed": true
+        },
+        "health-ring": {
+          "paired": true,
+          "pairing_time_ms": 880,
+          "rssi_dbm": -64,
+          "mtu_bytes": 247,
+          "ble_version": "5.3",
+          "gatt_services": [
+            "health_monitoring",
+            "device_info",
+            "battery",
+            "ota_update"
+          ],
+          "passed": true
+        },
+        "health-lab": {
+          "paired": true,
+          "pairing_time_ms": 1039,
+          "rssi_dbm": -59,
+          "mtu_bytes": 247,
+          "ble_version": "5.3",
+          "gatt_services": [
+            "health_monitoring",
+            "device_info",
+            "battery",
+            "ota_update"
+          ],
+          "passed": true
+        },
+        "simultaneous_4_device_ms": 1217,
+        "simultaneous_passed": true
+      }
+    },
+    "scenario_2": {
+      "scenario": "clinical_alert",
+      "passed": true,
+      "details": {
+        "afib_detected": {
+          "device": "health-band-neuro",
+          "detection_ms": 274,
+          "ble_tx_ms": 16,
+          "cloud_ms": 428,
+          "push_ms": 721,
+          "total_ms": 1439,
+          "sla_ms": 30000,
+          "passed": true
+        },
+        "hypoglycemia_55mgdl": {
+          "device": "health-lab",
+          "detection_ms": 301,
+          "ble_tx_ms": 26,
+          "cloud_ms": 371,
+          "push_ms": 843,
+          "total_ms": 1541,
+          "sla_ms": 30000,
+          "passed": true
+        },
+        "spo2_drop_88pct": {
+          "device": "health-key-ultra",
+          "detection_ms": 247,
+          "ble_tx_ms": 16,
+          "cloud_ms": 395,
+          "push_ms": 720,
+          "total_ms": 1378,
+          "sla_ms": 30000,
+          "passed": true
+        },
+        "fall_detected": {
+          "device": "health-key-ultra",
+          "detection_ms": 318,
+          "ble_tx_ms": 21,
+          "cloud_ms": 433,
+          "push_ms": 918,
+          "total_ms": 1690,
+          "sla_ms": 15000,
+          "passed": true
+        },
+        "tens_safety_cutoff": {
+          "device": "health-band-neuro",
+          "detection_ms": 574,
+          "ble_tx_ms": 14,
+          "cloud_ms": 0,
+          "push_ms": 0,
+          "total_ms": 574,
+          "sla_ms": 1000,
+          "passed": true
+        }
+      }
+    },
+    "scenario_3": {
+      "scenario": "ota_update",
+      "passed": true,
+      "details": {
+        "health-key-ultra": {
+          "firmware_size_kb": 512,
+          "transfer_time_s": 22.8,
+          "verify_time_ms": 241,
+          "flash_time_s": 10.2,
+          "reboot_ms": 1607,
+          "total_time_s": 34.6,
+          "signature_valid": true,
+          "rollback_tested": true,
+          "passed": true
+        },
+        "health-band-neuro": {
+          "firmware_size_kb": 1024,
+          "transfer_time_s": 45.5,
+          "verify_time_ms": 287,
+          "flash_time_s": 20.5,
+          "reboot_ms": 1708,
+          "total_time_s": 67.7,
+          "signature_valid": true,
+          "rollback_tested": true,
+          "passed": true
+        },
+        "health-ring": {
+          "firmware_size_kb": 256,
+          "transfer_time_s": 11.4,
+          "verify_time_ms": 247,
+          "flash_time_s": 5.1,
+          "reboot_ms": 1903,
+          "total_time_s": 18.4,
+          "signature_valid": true,
+          "rollback_tested": true,
+          "passed": true
+        },
+        "health-lab": {
+          "firmware_size_kb": 256,
+          "transfer_time_s": 11.4,
+          "verify_time_ms": 227,
+          "flash_time_s": 5.1,
+          "reboot_ms": 1636,
+          "total_time_s": 18.1,
+          "signature_valid": true,
+          "rollback_tested": true,
+          "passed": true
+        }
+      }
+    },
+    "scenario_4": {
+      "scenario": "power_budget",
+      "passed": false,
+      "details": {
+        "health-key-ultra": {
+          "battery_capacity_mah": 120,
+          "avg_current_ma": 1.8,
+          "daily_consumption_mah": [
+            39.05,
+            39.36,
+            39.44,
+            37.54,
+            36.95,
+            39.71,
+            42.54
+          ],
+          "total_7day_consumed_mah": 274.59,
+          "remaining_after_7days_pct": 0,
+          "estimated_life_days": 2.8,
+          "spec_min_days": 3,
+          "passed": false
+        },
+        "health-band-neuro": {
+          "battery_capacity_mah": 400,
+          "avg_current_ma": 8.5,
+          "daily_consumption_mah": [
+            184.39,
+            185.85,
+            186.25,
+            177.26,
+            174.5,
+            187.51,
+            200.9
+          ],
+          "total_7day_consumed_mah": 1296.66,
+          "remaining_after_7days_pct": 0,
+          "estimated_life_days": 2.0,
+          "spec_min_days": 2,
+          "passed": false
+        },
+        "health-ring": {
+          "battery_capacity_mah": 22,
+          "avg_current_ma": 0.9,
+          "daily_consumption_mah": [
+            19.52,
+            19.68,
+            19.72,
+            18.77,
+            18.48,
+            19.85,
+            21.27
+          ],
+          "total_7day_consumed_mah": 137.29,
+          "remaining_after_7days_pct": 0,
+          "estimated_life_days": 1.0,
+          "spec_min_days": 4,
+          "passed": false
+        },
+        "health-lab": {
+          "battery_capacity_mah": 50,
+          "avg_current_ma": 1.2,
+          "daily_consumption_mah": [
+            26.03,
+            26.24,
+            26.29,
+            25.02,
+            24.64,
+            26.47,
+            28.36
+          ],
+          "total_7day_consumed_mah": 183.05,
+          "remaining_after_7days_pct": 0,
+          "estimated_life_days": 1.7,
+          "spec_min_days": 7,
+          "passed": false
+        }
+      }
+    },
+    "scenario_5": {
+      "scenario": "algorithm_regression",
+      "passed": true,
+      "details": {
+        "HbA1c": {
+          "device": "health-ring",
+          "bias": 0.0433,
+          "sd": 0.2035,
+          "loa_upper": 0.4422,
+          "loa_lower": -0.3556,
+          "spec_bias": 0.2,
+          "spec_loa": 0.5,
+          "bias_passed": true,
+          "loa_passed": true,
+          "passed": true
+        },
+        "Systolic BP": {
+          "device": "health-ring",
+          "bias": -0.9418,
+          "sd": 3.1048,
+          "loa_upper": 5.1436,
+          "loa_lower": -7.0271,
+          "spec_bias": 5.0,
+          "spec_loa": 8.0,
+          "bias_passed": true,
+          "loa_passed": true,
+          "passed": true
+        },
+        "SpO2": {
+          "device": "health-key-ultra",
+          "bias": 0.3098,
+          "sd": 0.8576,
+          "loa_upper": 1.9907,
+          "loa_lower": -1.3712,
+          "spec_bias": 1.0,
+          "spec_loa": 2.0,
+          "bias_passed": true,
+          "loa_passed": true,
+          "passed": true
+        },
+        "Glucose": {
+          "device": "health-lab",
+          "zone_a_pct": 100.0,
+          "spec_zone_ab_pct": 95.0,
+          "passed": 

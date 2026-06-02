@@ -1,0 +1,438 @@
+{
+  "mode": "demo",
+  "timestamp": "2026-06-02T22:38:04.222093+00:00",
+  "summary": {
+    "total": 47,
+    "passed": 47
+  },
+  "device_reports": [
+    {
+      "serial": "EHK-2026-000001",
+      "device_type": "health-key-ultra",
+      "hw_revision": "rev-a",
+      "test_date": "2026-06-02T22:38:04.221226+00:00",
+      "station_id": "DEMO-STATION",
+      "overall_result": "PASS",
+      "fw_version": "1.0.0",
+      "ble_address": "AA:BB:CC:DD:EE:50",
+      "tests": [
+        {
+          "id": "FT-001",
+          "name": "BLE Advertising",
+          "result": "PASS",
+          "value": "RSSI=-62dBm",
+          "error": "",
+          "duration_ms": 110
+        },
+        {
+          "id": "FT-002",
+          "name": "BLE Connection",
+          "result": "PASS",
+          "value": "MTU=247B",
+          "error": "",
+          "duration_ms": 213
+        },
+        {
+          "id": "FT-003",
+          "name": "Firmware Version",
+          "result": "PASS",
+          "value": "v1.0.0",
+          "error": "",
+          "duration_ms": 307
+        },
+        {
+          "id": "FT-004",
+          "name": "Battery Voltage",
+          "result": "PASS",
+          "value": "4.12V (100%)",
+          "error": "",
+          "duration_ms": 312
+        },
+        {
+          "id": "FT-005",
+          "name": "ECG Signal Quality",
+          "result": "PASS",
+          "value": "HR=72 BPM, quality=94%",
+          "error": "",
+          "duration_ms": 381
+        },
+        {
+          "id": "FT-006",
+          "name": "PPG Signal Quality",
+          "result": "PASS",
+          "value": "SpO2=98%, red_dc=125000, ir_dc=118000",
+          "error": "",
+          "duration_ms": 102
+        },
+        {
+          "id": "FT-007",
+          "name": "SpO2 Calibration",
+          "result": "PASS",
+          "value": "ARMS=0.91%",
+          "error": "",
+          "duration_ms": 164
+        },
+        {
+          "id": "FT-008",
+          "name": "IMU Self-Test",
+          "result": "PASS",
+          "value": "IMU self-test PASS",
+          "error": "",
+          "duration_ms": 357
+        },
+        {
+          "id": "FT-009",
+          "name": "Temperature Sensor",
+          "result": "PASS",
+          "value": "36.5\u00b0C",
+          "error": "",
+          "duration_ms": 368
+        },
+        {
+          "id": "FT-010",
+          "name": "Flash Read/Write",
+          "result": "PASS",
+          "value": "0 errors",
+          "error": "",
+          "duration_ms": 334
+        },
+        {
+          "id": "FT-013",
+          "name": "Crypto Attestation",
+          "result": "PASS",
+          "value": "ECDSA-P256 OK",
+          "error": "",
+          "duration_ms": 265
+        },
+        {
+          "id": "FT-014",
+          "name": "Provisioning Data",
+          "result": "PASS",
+          "value": "SN+MAC+KEY OK",
+          "error": "",
+          "duration_ms": 343
+        }
+      ],
+      "calibration_applied": true
+    },
+    {
+      "serial": "EHB-2026-000001",
+      "device_type": "health-band-neuro",
+      "hw_revision": "rev-a",
+      "test_date": "2026-06-02T22:38:04.221451+00:00",
+      "station_id": "DEMO-STATION",
+      "overall_result": "PASS",
+      "fw_version": "1.0.0",
+      "ble_address": "AA:BB:CC:DD:EE:0B",
+      "tests": [
+        {
+          "id": "FT-001",
+          "name": "BLE Advertising",
+          "result": "PASS",
+          "value": "RSSI=-62dBm",
+          "error": "",
+          "duration_ms": 301
+        },
+        {
+          "id": "FT-002",
+          "name": "BLE Connection",
+          "result": "PASS",
+          "value": "MTU=247B",
+          "error": "",
+          "duration_ms": 350
+        },
+        {
+          "id": "FT-003",
+          "name": "Firmware Version",
+          "result": "PASS",
+          "value": "v1.0.0",
+          "error": "",
+          "duration_ms": 275
+        },
+        {
+          "id": "FT-004",
+          "name": "Battery Voltage",
+          "result": "PASS",
+          "value": "4.12V (100%)",
+          "error": "",
+          "duration_ms": 172
+        },
+        {
+          "id": "FT-005",
+          "name": "ECG Signal Quality",
+          "result": "PASS",
+          "value": "HR=72 BPM, quality=94%",
+          "error": "",
+          "duration_ms": 51
+        },
+        {
+          "id": "FT-006",
+          "name": "PPG Signal Quality",
+          "result": "PASS",
+          "value": "SpO2=98%, red_dc=125000, ir_dc=118000",
+          "error": "",
+          "duration_ms": 364
+        },
+        {
+          "id": "FT-008",
+          "name": "IMU Self-Test",
+          "result": "PASS",
+          "value": "IMU self-test PASS",
+          "error": "",
+          "duration_ms": 91
+        },
+        {
+          "id": "FT-009",
+          "name": "Temperature Sensor",
+          "result": "PASS",
+          "value": "36.5\u00b0C",
+          "error": "",
+          "duration_ms": 106
+        },
+        {
+          "id": "FT-010",
+          "name": "Flash Read/Write",
+          "result": "PASS",
+          "value": "0 errors",
+          "error": "",
+          "duration_ms": 197
+        },
+        {
+          "id": "FT-013",
+          "name": "Crypto Attestation",
+          "result": "PASS",
+          "value": "ECDSA-P256 OK",
+          "error": "",
+          "duration_ms": 100
+        },
+        {
+          "id": "FT-014",
+          "name": "Provisioning Data",
+          "result": "PASS",
+          "value": "SN+MAC+KEY OK",
+          "error": "",
+          "duration_ms": 280
+        }
+      ],
+      "calibration_applied": true
+    },
+    {
+      "serial": "EHR-2026-000001",
+      "device_type": "health-ring-ultra",
+      "hw_revision": "rev-a",
+      "test_date": "2026-06-02T22:38:04.221630+00:00",
+      "station_id": "DEMO-STATION",
+      "overall_result": "PASS",
+      "fw_version": "1.0.0",
+      "ble_address": "AA:BB:CC:DD:EE:13",
+      "tests": [
+        {
+          "id": "FT-001",
+          "name": "BLE Advertising",
+          "result": "PASS",
+          "value": "RSSI=-62dBm",
+          "error": "",
+          "duration_ms": 400
+        },
+        {
+          "id": "FT-002",
+          "name": "BLE Connection",
+          "result": "PASS",
+          "value": "MTU=247B",
+          "error": "",
+          "duration_ms": 301
+        },
+        {
+          "id": "FT-003",
+          "name": "Firmware Version",
+          "result": "PASS",
+          "value": "v1.0.0",
+          "error": "",
+          "duration_ms": 397
+        },
+        {
+          "id": "FT-004",
+          "name": "Battery Voltage",
+          "result": "PASS",
+          "value": "4.12V (100%)",
+          "error": "",
+          "duration_ms": 210
+        },
+        {
+          "id": "FT-005",
+          "name": "ECG Signal Quality",
+          "result": "PASS",
+          "value": "HR=72 BPM, quality=94%",
+          "error": "",
+          "duration_ms": 157
+        },
+        {
+          "id": "FT-006",
+          "name": "PPG Signal Quality",
+          "result": "PASS",
+          "value": "SpO2=98%, red_dc=125000, ir_dc=118000",
+          "error": "",
+          "duration_ms": 253
+        },
+        {
+          "id": "FT-007",
+          "name": "SpO2 Calibration",
+          "result": "PASS",
+          "value": "ARMS=0.91%",
+          "error": "",
+          "duration_ms": 178
+        },
+        {
+          "id": "FT-008",
+          "name": "IMU Self-Test",
+          "result": "PASS",
+          "value": "IMU self-test PASS",
+          "error": "",
+          "duration_ms": 228
+        },
+        {
+          "id": "FT-009",
+          "name": "Temperature Sensor",
+          "result": "PASS",
+          "value": "36.5\u00b0C",
+          "error": "",
+          "duration_ms": 232
+        },
+        {
+          "id": "FT-010",
+          "name": "Flash Read/Write",
+          "result": "PASS",
+          "value": "0 errors",
+          "error": "",
+          "duration_ms": 242
+        },
+        {
+          "id": "FT-013",
+          "name": "Crypto Attestation",
+          "result": "PASS",
+          "value": "ECDSA-P256 OK",
+          "error": "",
+          "duration_ms": 312
+        },
+        {
+          "id": "FT-014",
+          "name": "Provisioning Data",
+          "result": "PASS",
+          "value": "SN+MAC+KEY OK",
+          "error": "",
+          "duration_ms": 376
+        }
+      ],
+      "calibration_applied": true
+    },
+    {
+      "serial": "EHL-2026-000001",
+      "device_type": "health-lab-ultra",
+      "hw_revision": "rev-a",
+      "test_date": "2026-06-02T22:38:04.221825+00:00",
+      "station_id": "DEMO-STATION",
+      "overall_result": "PASS",
+      "fw_version": "1.0.0",
+      "ble_address": "AA:BB:CC:DD:EE:39",
+      "tests": [
+        {
+          "id": "FT-001",
+          "name": "BLE Advertising",
+          "result": "PASS",
+          "value": "RSSI=-62dBm",
+          "error": "",
+          "duration_ms": 224
+        },
+        {
+          "id": "FT-002",
+          "name": "BLE Connection",
+          "result": "PASS",
+          "value": "MTU=247B",
+          "error": "",
+          "duration_ms": 95
+        },
+        {
+          "id": "FT-003",
+          "name": "Firmware Version",
+          "result": "PASS",
+          "value": "v1.0.0",
+          "error": "",
+          "duration_ms": 335
+        },
+        {
+          "id": "FT-004",
+          "name": "Battery Voltage",
+          "result": "PASS",
+          "value": "4.12V (100%)",
+          "error": "",
+          "duration_ms": 325
+        },
+        {
+          "id": "FT-006",
+          "name": "PPG Signal Quality",
+          "result": "PASS",
+          "value": "SpO2=98%, red_dc=125000, ir_dc=118000",
+          "error": "",
+          "duration_ms": 199
+        },
+        {
+          "id": "FT-008",
+          "name": "IMU Self-Test",
+          "result": "PASS",
+          "value": "IMU self-test PASS",
+          "error": "",
+          "duration_ms": 197
+        },
+        {
+          "id": "FT-009",
+          "name": "Temperature Sensor",
+          "result": "PASS",
+          "value": "36.5\u00b0C",
+          "error": "",
+          "duration_ms": 284
+        },
+        {
+          "id": "FT-010",
+          "name": "Flash Read/Write",
+          "result": "PASS",
+          "value": "0 errors",
+          "error": "",
+          "duration_ms": 122
+        },
+        {
+          "id": "FT-011",
+          "name": "Glucose Electrode",
+          "result": "PASS",
+          "value": "42.3 nA",
+          "error": "",
+          "duration_ms": 380
+        },
+        {
+          "id": "FT-012",
+          "name": "Reference Electrode",
+          "result": "PASS",
+          "value": "200.1 mV",
+          "error": "",
+          "duration_ms": 345
+        },
+        {
+          "id": "FT-013",
+          "name": "Crypto Attestation",
+          "result": "PASS",
+          "value": "ECDSA-P256 OK",
+          "error": "",
+          "duration_ms": 208
+        },
+        {
+          "id": "FT-014",
+          "name": "Provisioning Data",
+          "result": "PASS",
+          "value": "SN+MAC+KEY OK",
+          "error": "",
+          "duration_ms": 62
+        }
+      ],
+      "calibration_applied": true
+    }
+  ]
+}

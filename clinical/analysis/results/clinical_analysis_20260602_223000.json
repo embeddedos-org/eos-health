@@ -1,0 +1,95 @@
+{
+  "hba1c": {
+    "metric": "HbA1c",
+    "n": 200,
+    "bias": 0.0433,
+    "bias_ci_95": 0.0284,
+    "sd": 0.2035,
+    "loa_upper": 0.4422,
+    "loa_lower": -0.3556,
+    "pearson_r": 0.9943,
+    "pearson_p": 0.0,
+    "proportional_bias": true,
+    "bias_passed": true,
+    "loa_passed": true,
+    "overall_passed": true,
+    "plot": "clinical/analysis/results/bland_altman_hba1c.png"
+  },
+  "blood_pressure": {
+    "metric": "Systolic BP",
+    "n": 200,
+    "bias": -0.9418,
+    "bias_ci_95": 0.4329,
+    "sd": 3.1048,
+    "loa_upper": 5.1436,
+    "loa_lower": -7.0271,
+    "pearson_r": 0.9928,
+    "pearson_p": 0.0,
+    "proportional_bias": false,
+    "bias_passed": true,
+    "loa_passed": true,
+    "overall_passed": true,
+    "plot": "clinical/analysis/results/bland_altman_systolic_bp.png"
+  },
+  "spo2": {
+    "metric": "SpO\u2082",
+    "n": 200,
+    "bias": 0.3074,
+    "bias_ci_95": 0.1193,
+    "sd": 0.8559,
+    "loa_upper": 1.9848,
+    "loa_lower": -1.3701,
+    "pearson_r": 0.9953,
+    "pearson_p": 0.0,
+    "proportional_bias": false,
+    "bias_passed": true,
+    "loa_passed": true,
+    "overall_passed": true,
+    "plot": "clinical/analysis/results/bland_altman_spo\u2082.png",
+    "arms": 0.907,
+    "iso_80601_passed": true
+  },
+  "glucose": {
+    "n": 200,
+    "zone_counts": {
+      "0": 200,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0
+    },
+    "zone_percentages": {
+      "0": 100.0,
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0
+    },
+    "zone_ab_pct": 100.0,
+    "iso_15197_passed": true,
+    "plot": "clinical/analysis/results/clarke_error_grid.png"
+  },
+  "afib": {
+    "condition": "AFib",
+    "n_positive": 67,
+    "n_negative": 133,
+    "auc": 0.9962,
+    "auc_ci_95": 0.0105,
+    "optimal_threshold": 0.4718,
+    "sensitivity": 0.9851,
+    "specificity": 0.9774,
+    "ppv": 0.9565,
+    "npv": 0.9924,
+    "tp": 66,
+    "tn": 130,
+    "fp": 3,
+    "fn": 1,
+    "passed": true,
+    "plot": "clinical/analysis/results/roc_afib.png"
+  },
+  "lactate": {
+    "pearson_r": 0.9816,
+    "pearson_p": 0.0,
+    "passed": true
+  }
+}
