@@ -3,6 +3,11 @@ project(health_band_neuro_tests C)
 
 set(CMAKE_C_STANDARD 11)
 
+# add_test() below only registers with ctest once testing is enabled. Without
+# this, the four suites built successfully and ctest reported
+# "No tests were found!!!", so nothing was actually being run.
+enable_testing()
+
 # Host build — no MCU flags needed
 set(CMAKE_C_FLAGS "-Wall -Wextra -O2 -DTEST_BUILD")
 
