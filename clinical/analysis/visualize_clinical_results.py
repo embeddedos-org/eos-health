@@ -22,7 +22,7 @@ from scipy.integrate import trapezoid
 from pathlib import Path
 
 np.random.seed(137)
-OUT = Path("/home/ubuntu/eos-health/clinical/analysis/results")
+OUT = Path(__file__).resolve().parent / "results"
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ── Shared style ────────────────────────────────────────────────────────────

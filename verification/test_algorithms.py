@@ -38,6 +38,11 @@ def test(name: str, result: bool, detail: str = ""):
     else:
         FAIL += 1
 
+# This is the script's own assertion helper, not a pytest case. Its name matches
+# pytest's discovery pattern, so without this marker pytest collects it and then
+# errors because `name` and `result` look like fixtures it cannot supply.
+test.__test__ = False
+
 def approx(a: float, b: float, tol: float = 0.05) -> bool:
     """True if |a-b| <= tol * |b| (relative) or |a-b| <= tol (absolute)."""
     return abs(a - b) <= max(tol * abs(b), tol)

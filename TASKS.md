@@ -17,7 +17,8 @@ Status is one of: `todo`, `in-progress`, `blocked`, `review`, `done`.
 
 | ID | Task | Owner | Verified by | Evidence |
 |----|------|-------|-------------|----------|
-| —  | None yet. | — | — | — |
+| T-001 | Remove hardcoded `/home/ubuntu` paths that broke the repo off one machine | backend | reviewer | `verification/test_corner_cases.py:745` wrote its report to `/home/ubuntu/eos-health/verification/corner_case_report.json` and `clinical/analysis/visualize_clinical_results.py:25` wrote to `/home/ubuntu/eos-health/clinical/analysis/results`. Both are module-level statements, so the first raised `FileNotFoundError` during pytest collection and aborted the entire run. Both now resolve relative to `Path(__file__)`. The corner-case script runs to completion and writes its report. |
+| T-002 | Make pytest collect the real suite instead of hardware scripts | testing | reviewer | Three files match `test_*.py` but are not pytest modules: `test_corner_cases.py` (standalone, body runs at import and ends in `sys.exit()`), `eos_factory_test.py` and `ble_hardware_test.py` (need `bleak` and real BLE hardware). Collecting them aborted the run before any real test executed. Added `pytest.ini` with `testpaths = verification/test_algorithms.py`. Also marked that file's own `test()` assertion helper `__test__ = False` — pytest was collecting it and erroring on its `name`/`result` parameters. Result: 10 passed, 0 errors (was 0 passed, 2 errors). |
 
 ---
 
