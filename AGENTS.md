@@ -1,98 +1,56 @@
-<!-- generated: eos-ai-scaffold -->
-# Agent Responsibilities
+# Repository Guidance for Agents
 
-Each role owns a slice of the work and does only that slice. Full briefs are in
-[.ai/](./.ai/). These are responsibilities, not a required agent count — one
-agent may hold several roles on a small change. Split when the roles need
-genuinely different context, not by default.
+## Scope and architecture
 
-One rule is structural rather than stylistic: **whoever implements does not
-approve.** Review is a separate role because self-review reliably misses the
-thing the implementer already believes is correct.
+eos-health is a four-device wearable-health monorepo. Device-specific hardware,
+firmware, patent, academic, and roadmap material lives under `devices/` for
+HEALTH-KEY ULTRA, HEALTH-BAND Neuro, HEALTH-RING, and HEALTH-LAB. Shared firmware
+is under `firmware/`, applications under `apps/`, and cross-device clinical,
+regulatory, verification, academic, legal, patent, and EB-1A material is kept in
+the corresponding top-level directories.
 
-## Planner — [.ai/planner.md](./.ai/planner.md)
+Keep device boundaries and shared contracts explicit. A change to a sensor,
+BLE service, measurement unit, calibration rule, firmware interface, or health
+claim may require coordinated updates, but do not update unrelated devices by
+analogy. Follow the specialist role briefs in [`.ai/`](./.ai/) and the handoff
+protocol in [`HANDOFF.md`](./HANDOFF.md). The implementer must not act as the
+approving reviewer.
 
-- Understand the request.
-- Break work into tasks.
-- Assign work.
+## Validation
 
-## Architect — [.ai/architect.md](./.ai/architect.md)
+Use the nearest checked-in manifest and documentation for the affected surface.
 
-- Design structure.
-- Choose patterns.
-- Own dependencies, scalability and maintainability.
+- For `apps/web/`, its `package.json` defines `pnpm check`, `pnpm test`, and
+  `pnpm build`.
+- The root [`README.md`](./README.md) documents `npm install` plus
+  `npx expo start` for `apps/mobile/`, and `pnpm install` plus `pnpm dev` for
+  `apps/web/`.
+- Firmware CMake trees are device-specific. Follow the nearest `CMakeLists.txt`
+  and flashing guide, and record missing vendor SDKs, hardware, or source files
+  rather than treating an unconfigured tree as passing.
+- For simulations and verification scripts, preserve their inputs and units and
+  compare results with the associated report or protocol. A simulation is not
+  a substitute for bench, clinical, regulatory, or production validation.
+- Documentation-only governance changes do not validate firmware, sensing
+  accuracy, medical claims, safety, security, or regulatory compliance.
 
-## Backend — [.ai/backend.md](./.ai/backend.md)
+## Hardware, medical, and evidence discipline
 
-- APIs
-- Database
-- Business logic
+Preserve component identifiers, units, electrode and sensor assumptions, BLE
+characteristics, calibration data, power constraints, and BOM-to-schematic
+traceability. Treat medical, diagnostic, clinical, patent, regulatory, and
+submission-ready statements as evidence-backed claims. Do not broaden intended
+use, supported metrics, filing status, or compliance status without authoritative
+source evidence and appropriate review.
 
-## Frontend — [.ai/frontend.md](./.ai/frontend.md)
+Do not commit patient or participant data, credentials, signing keys, generated
+build output, downloaded SDKs, or private filing material. Use synthetic or
+approved de-identified fixtures and follow [`SECURITY-STANDARDS.md`](./SECURITY-STANDARDS.md)
+for security-sensitive changes.
 
-- UI
-- Components
-- Accessibility
-
-## Testing — [.ai/testing.md](./.ai/testing.md)
-
-- Unit tests
-- Integration tests
-- Regression tests
-
-## Security — [.ai/security.md](./.ai/security.md)
-
-- Authentication and authorization
-- Validation
-- Secrets
-- Dependency review
-
-## Performance — [.ai/performance.md](./.ai/performance.md)
-
-- Profiling
-- Optimization
-- Scalability
-
-## Reviewer — [.ai/reviewer.md](./.ai/reviewer.md)
-
-- Final review
-- Verify requirements
-- Merge findings
-
-## Documentation — [.ai/docs.md](./.ai/docs.md)
-
-- README
-- API docs
-- Changelog
-- Migration and architecture notes
-
-## Release — [.ai/release.md](./.ai/release.md)
-
-- Release notes
-- Deployment preparation
-- Rollback guidance
-
----
-
-## Switching roles
-
-Switch when the task changes domain, when specialist knowledge is required,
-when independent review is required, or when the context has grown past what
-one agent can hold accurately. Every switch runs the protocol in
-[HANDOFF.md](./HANDOFF.md).
-
-## Finding work that is not yours
-
-You will. The rule is: **record it, do not absorb it, do not drop it.**
-
-| What you found | Do |
-|----------------|-----|
-| A defect unrelated to your task | Note it in [TASKS.md](./TASKS.md) and keep going. |
-| A defect your change would sit on top of | Stop; say it blocks you; propose fixing it as its own task. |
-| A security issue | Report immediately, whatever role you hold. This one never waits for a handoff. |
-| A design decision missing from the plan | Return to the architect rather than deciding it inside an implementation. |
-| Work that belongs to a role nobody assigned | Say so. An unowned task is how requirements go missing. |
-
-Silently fixing something outside your task makes the diff unreviewable.
-Silently ignoring it means nobody ever looks again. Neither is acceptable; the
-note is what makes the difference.
+Every human-authored pull request must use a GitHub-recognized closing keyword
+for an issue in this repository, for example `Fixes #123`. Cross-repository
+issues and plain issue mentions do not satisfy the linked-issue policy. Follow
+[`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md), and
+keep the published Wiki snapshot in [`docs/wiki/`](./docs/wiki/) synchronized
+when Wiki content changes.
