@@ -1,0 +1,33 @@
+/*
+ * Emulate the 44 KB data_buffer NVM partition in RAM for host-side tests.
+ *
+ * On target the partition lives at 0x000F5000 in real flash; here Zephyr's
+ * flash_simulator provides the flash API surface and fixed-partitions carves
+ * out the 44 KB region the module expects as `data_buffer_partition`.
+ * The suite is intended to run on native_sim: `west build -b native_sim`.
+ */
+/ {
+	chosen {
+		zephyr,flash-controller = &flash_sim;
+	};
+};
+
+/* The board's real flash is not used by this test app. */
+&flash0 {
+	status = "disabled";
+};
+
+flash_sim: flash-simulator {
+	compatible = "zephyr,flash-simulator";
+	label = "FLASH_SIMULATOR";
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		data_buffer_partition: partition@0 {
+			label = "data_buffer";
+			reg = <0x00000000 0x0000B000>; /* 44 KB */
+		};
+	};
+};
