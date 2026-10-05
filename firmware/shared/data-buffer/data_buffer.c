@@ -101,16 +101,24 @@ int data_buffer_write(sensor_type_t type, uint8_t flags,
     k_mutex_lock(&buf_mutex, K_FOREVER);
 
     /* Check if buffer is full */
-    if (buf_state.bytes_used + total > DATA_BUF_SIZE - DATA_BUF_HEADER_SIZE) {
-        if (flags & DATA_FLAG_CRITICAL) {
-            /* Drop oldest non-critical record to make room */
-            data_buffer_drop_oldest_noncritical();
-        } else {
-            buf_state.overflow = true;
-            k_mutex_unlock(&buf_mutex);
-            LOG_WRN("Data buffer full — dropping record type %u", type);
-            return -ENOBUFS;
+    if (flags & DATA_FLAG_CRITICAL) {
+        /* Drop oldest non-critical records until there is room. If the
+         * buffer holds only critical records, there is nothing safe to
+         * drop — report -ENOBUFS like the non-critical path. */
+        while (buf_state.bytes_used + total > DATA_BUF_SIZE - DATA_BUF_HEADER_SIZE) {
+            if (data_buffer_drop_oldest_noncritical() != 0) {
+                buf_state.overflow = true;
+                k_mutex_unlock(&buf_mutex);
+                LOG_WRN("Data buffer full of critical records — dropping type %u",
+                        type);
+                return -ENOBUFS;
+            }
         }
+    } else if (buf_state.bytes_used + total > DATA_BUF_SIZE - DATA_BUF_HEADER_SIZE) {
+        buf_state.overflow = true;
+        k_mutex_unlock(&buf_mutex);
+        LOG_WRN("Data buffer full — dropping record type %u", type);
+        return -ENOBUFS;
     }
 
     /* Build record header */
@@ -215,6 +223,53 @@ void data_buffer_clear(void)
     buf_state.overflow     = false;
     data_buffer_save_header();
     k_mutex_unlock(&buf_mutex);
+}
+
+/*
+ * Drop the oldest non-critical record to make room for a critical write.
+ *
+ * Called with buf_mutex held. Scans from read_offset, unlinks the first
+ * record without DATA_FLAG_CRITICAL (advances read_offset past it,
+ * decrements record_count/bytes_used), and persists the header.
+ *
+ * Returns 0 if a record was dropped, -ENOBUFS if every buffered record is
+ * critical (nothing safe to drop).
+ */
+static int data_buffer_drop_oldest_noncritical(void)
+{
+    uint32_t off = buf_state.read_offset;
+
+    for (uint32_t scanned = 0; scanned < buf_state.record_count; scanned++) {
+        uint8_t hdr[RECORD_HEADER_SIZE];
+        flash_area_read(buf_state.fa, off, hdr, RECORD_HEADER_SIZE);
+
+        uint16_t data_len = hdr[2] | ((uint16_t)hdr[3] << 8);
+        uint16_t total    = RECORD_HEADER_SIZE + data_len + 2; /* +2 CRC16 */
+
+        if (!(hdr[1] & DATA_FLAG_CRITICAL)) {
+            /* Victim found — unlink it. */
+            off += total;
+            if (off >= DATA_BUF_SIZE) {
+                off = DATA_BUF_HEADER_SIZE;
+            }
+            buf_state.read_offset = off;
+            buf_state.record_count--;
+            buf_state.bytes_used -= total;
+            buf_state.overflow = true;
+            data_buffer_save_header();
+            LOG_WRN("Dropped oldest non-critical record (%u bytes) for critical write",
+                    total);
+            return 0;
+        }
+
+        off += total;
+        if (off >= DATA_BUF_SIZE) {
+            off = DATA_BUF_HEADER_SIZE;
+        }
+    }
+
+    /* All buffered records are critical — nothing safe to drop. */
+    return -ENOBUFS;
 }
 
 static void data_buffer_save_header(void)

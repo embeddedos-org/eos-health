@@ -60,6 +60,8 @@ uint32_t data_buffer_get_bytes_used(void);
 bool     data_buffer_is_overflow(void);
 
 static void data_buffer_save_header(void);
-static void data_buffer_drop_oldest_noncritical(void);
+/* Returns 0 if a non-critical record was dropped, -ENOBUFS if all
+ * buffered records are critical. Called with the buffer mutex held. */
+static int data_buffer_drop_oldest_noncritical(void);
 
 #endif /* EOS_DATA_BUFFER_H */
