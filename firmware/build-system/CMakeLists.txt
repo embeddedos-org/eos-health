@@ -171,6 +171,7 @@ set(SHARED_SOURCES
     ${CMAKE_SOURCE_DIR}/../shared/data-buffer/data_buffer.c
     ${CMAKE_SOURCE_DIR}/../shared/ble-stack/ble_manager.c
     ${CMAKE_SOURCE_DIR}/../shared/provisioning/provisioning.c
+    ${CMAKE_SOURCE_DIR}/../shared/provisioning/crypto.c
     ${CMAKE_SOURCE_DIR}/../shared/health-algorithms/ecg/ecg_algorithm.c
     ${CMAKE_SOURCE_DIR}/../shared/health-algorithms/spo2/spo2_algorithm.c
     ${CMAKE_SOURCE_DIR}/../shared/health-algorithms/blood-pressure/bp_algorithm.c
