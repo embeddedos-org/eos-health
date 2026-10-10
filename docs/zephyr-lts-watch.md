@@ -21,6 +21,15 @@ picture, recorded so the decision is made against fresh facts.
 - New Zephyr Silver members include **GigaDevice** and **Morse Micro**
   (Wi-Fi HaLow) — new MCU vendors entering Zephyr's orbit, widening
   the hardware the LTS lines will cover.
+- **TI + Infineon upgraded to Zephyr Platinum** (Oct 1, pre-summit) —
+  the two most relevant silicon vendors for safety and long-lifecycle
+  use are now at the top membership tier: deeper board support and
+  LTS coverage for their parts is the reasonable expectation.
+- **nRF54LC10A (announced ~Oct 9)** — 128 MHz Cortex-M33 + 128 MHz
+  RISC-V coprocessor, BT LE Channel Sounding, 802.15.4 / Thread /
+  Zigbee / Matter, sub-50 nA hibernation, **TrustZone + secure boot +
+  tamper detection**: the secure-boot benchmark for the health-device
+  story. Partially closes the standing nRF54 gap at the low-cost end.
 
 ## What this means for #2
 
