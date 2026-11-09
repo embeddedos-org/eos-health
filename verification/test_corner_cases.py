@@ -17,6 +17,7 @@ import hashlib
 import hmac
 import random
 import sys
+from pathlib import Path
 from typing import List, Tuple, Dict, Any
 
 PASS = "\033[92m✅ PASS\033[0m"
@@ -742,7 +743,9 @@ report = {
     "score_pct": round(pct, 1),
     "results": results
 }
-with open("/home/ubuntu/eos-health/verification/corner_case_report.json", "w") as f:
+# Write next to this script so the run works from any checkout and any cwd.
+REPORT_PATH = Path(__file__).resolve().parent / "corner_case_report.json"
+with open(REPORT_PATH, "w") as f:
     json.dump(report, f, indent=2)
 print(f"\n  Report saved: verification/corner_case_report.json")
 
