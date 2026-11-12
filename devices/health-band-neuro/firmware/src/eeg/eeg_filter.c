@@ -9,8 +9,9 @@
  *  - Common Average Reference (CAR) spatial filter
  *
  * All filters are designed for fs = 250 Hz.
- * Coefficients generated with scipy.signal.butter() and converted to
- * second-order sections (SOS) for numerical stability.
+ * Coefficients from scipy.signal.butter(2, [lo, hi], btype="bandpass",
+ * fs=250, output="sos") and scipy.signal.iirnotch(50, 30, fs=250),
+ * rounded to 8 decimal places.
  *
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2026 EmbeddedOS Foundation
@@ -41,37 +42,37 @@ static inline float biquad_process(biquad_t *bq, float x)
 
 /* Delta band: 0.5–4 Hz, 4th-order Butterworth → 2 biquad sections */
 static const float DELTA_SOS[2][5] = {
-    { 0.00001329f,  0.00002659f,  0.00001329f, -1.97223f,  0.97267f },
-    { 1.00000000f,  2.00000000f,  1.00000000f, -1.98779f,  0.98823f },
+    { 0.00182013f,  0.00364026f,  0.00182013f, -1.88979231f,  0.89766288f },
+    { 1.00000000f, -2.00000000f,  1.00000000f, -1.98350381f,  0.98369456f },
 };
 
 /* Theta band: 4–8 Hz */
 static const float THETA_SOS[2][5] = {
-    { 0.00021609f,  0.00043218f,  0.00021609f, -1.94499f,  0.94608f },
-    { 1.00000000f,  2.00000000f,  1.00000000f, -1.97497f,  0.97584f },
+    { 0.00235721f,  0.00471442f,  0.00235721f, -1.88294420f,  0.91509809f },
+    { 1.00000000f, -2.00000000f,  1.00000000f, -1.93614071f,  0.94795535f },
 };
 
 /* Alpha band: 8–13 Hz */
 static const float ALPHA_SOS[2][5] = {
-    { 0.00082604f,  0.00165208f,  0.00082604f, -1.89372f,  0.89703f },
-    { 1.00000000f,  2.00000000f,  1.00000000f, -1.95831f,  0.96076f },
+    { 0.00362168f,  0.00724336f,  0.00362168f, -1.81326188f,  0.90127690f },
+    { 1.00000000f, -2.00000000f,  1.00000000f, -1.88439410f,  0.92888395f },
 };
 
 /* Beta band: 13–30 Hz */
 static const float BETA_SOS[2][5] = {
-    { 0.00548246f,  0.01096492f,  0.00548246f, -1.76484f,  0.78677f },
-    { 1.00000000f,  2.00000000f,  1.00000000f, -1.91093f,  0.93085f },
+    { 0.03476160f,  0.06952319f,  0.03476160f, -1.30268422f,  0.67887887f },
+    { 1.00000000f, -2.00000000f,  1.00000000f, -1.68751190f,  0.80541776f },
 };
 
 /* Gamma band: 30–100 Hz */
 static const float GAMMA_SOS[2][5] = {
-    { 0.04533922f,  0.09067844f,  0.04533922f, -1.36640f,  0.54776f },
-    { 1.00000000f,  2.00000000f,  1.00000000f, -1.72093f,  0.78669f },
+    { 0.35034638f, -0.70069276f,  0.35034638f, -0.94709938f,  0.39615203f },
+    { 1.00000000f,  2.00000000f,  1.00000000f,  1.12232765f,  0.45495684f },
 };
 
 /* 50 Hz notch filter (Q = 30) */
 static const float NOTCH50_SOS[1][5] = {
-    { 1.00000000f, -1.61803399f,  1.00000000f, -1.61803399f,  0.99337748f },
+    { 0.97948276f, -0.60535364f,  0.97948276f, -0.60535364f,  0.95896552f },
 };
 
 /* ─── Per-channel filter state ───────────────────────────────────────────── */
