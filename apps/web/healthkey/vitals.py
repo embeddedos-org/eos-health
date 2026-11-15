@@ -291,10 +291,17 @@ class RespiratoryRateEstimator:
 
         # Simple bandpass: count zero crossings in expected breath frequency range
         # Zero crossings per second / 2 = frequency in Hz → × 60 = breaths/min
+        # A sample exactly at the mean (common with integer ADC counts) has no
+        # sign; compare against the last non-zero sample so a crossing through
+        # it still counts, once.
         crossings = 0
-        for i in range(1, len(centered)):
-            if centered[i - 1] * centered[i] < 0:
+        prev = 0.0
+        for s in centered:
+            if s == 0:
+                continue
+            if prev * s < 0:
                 crossings += 1
+            prev = s
 
         duration_s = len(accel_z) / self._FS
         freq_hz = (crossings / 2.0) / duration_s
