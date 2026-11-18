@@ -127,6 +127,26 @@ void test_lf_hf_ratio_non_negative(void)
     TEST_ASSERT_TRUE(hrv.hf_power >= 0.0f);
 }
 
+/* ─── Test: 0.15 Hz is the first HF frequency, not the last LF one ───────── */
+
+void test_rr_oscillation_at_0p15hz_is_high_frequency(void)
+{
+    /* HF is 0.15–0.40 Hz and LF stops below 0.15 Hz. Modulate a 1000 ms RR
+     * series at exactly 0.15 Hz (one breath every 6.7 s): almost all of its
+     * power is at the 0.15 Hz bin, so HF must dominate LF. */
+    uint16_t rr[120];
+    double t = 0.0;
+    for (int i = 0; i < 120; i++) {
+        rr[i] = (uint16_t)lround(1000.0 + 40.0 * sin(2.0 * M_PI * 0.15 * t));
+        t += rr[i] / 1000.0;
+    }
+
+    hrv_metrics_t hrv;
+    TEST_ASSERT_EQUAL(HBN_OK, ecg_compute_hrv(rr, 120, &hrv));
+    TEST_ASSERT_TRUE(hrv.hf_power > hrv.lf_power);
+    TEST_ASSERT_TRUE(hrv.lf_hf_ratio < 1.0f);
+}
+
 /* ─── Test: signal quality is in [0, 100] ───────────────────────────────── */
 
 void test_signal_quality_in_range(void)
@@ -153,6 +173,7 @@ int main(void)
     RUN_TEST(test_null_output_returns_invalid);
     RUN_TEST(test_too_few_beats_returns_invalid);
     RUN_TEST(test_lf_hf_ratio_non_negative);
+    RUN_TEST(test_rr_oscillation_at_0p15hz_is_high_frequency);
     RUN_TEST(test_signal_quality_in_range);
     return UNITY_END();
 }
