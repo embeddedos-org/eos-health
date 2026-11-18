@@ -241,8 +241,11 @@ hbn_result_t ecg_compute_hrv(const uint16_t *rr_ms, size_t n,
     double lf_power = 0.0, hf_power = 0.0;
     double t = 0.0;
 
-    /* Evaluate at discrete frequencies using DFT-like approach */
-    for (float freq = 0.04f; freq <= 0.40f; freq += 0.01f) {
+    /* Evaluate at discrete frequencies using DFT-like approach.
+     * Step 0.01 Hz by an integer index: adding 0.01f to a float 11 times
+     * gives 0.1499... Hz, which put the 0.15 Hz bin in LF instead of HF. */
+    for (int k = 4; k <= 40; k++) {
+        double freq = k / 100.0;
         double cos_sum = 0.0, sin_sum = 0.0;
         double t_acc = 0.0;
         for (size_t i = 0; i < n; i++) {
@@ -255,8 +258,8 @@ hbn_result_t ecg_compute_hrv(const uint16_t *rr_ms, size_t n,
         double power = (cos_sum * cos_sum + sin_sum * sin_sum) / (double)n;
         (void)t;
 
-        if (freq >= 0.04f && freq < 0.15f) lf_power += power;
-        else if (freq >= 0.15f && freq <= 0.40f) hf_power += power;
+        if (k < 15) lf_power += power;   /* LF: 0.04–0.14 Hz */
+        else        hf_power += power;   /* HF: 0.15–0.40 Hz */
     }
 
     out->lf_power    = (float)lf_power;
