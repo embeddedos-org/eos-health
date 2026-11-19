@@ -7,12 +7,14 @@ class ECGProcessor:
     def __init__(self):
         self._samples = []
         self._r_peaks = []
+        self._r_peaks_threshold = None
 
     def add_samples(self, samples):
         if not all(isinstance(s, (int, float)) for s in samples):
             raise TypeError("Samples must be numeric")
         self._samples.extend(float(s) for s in samples)
         self._r_peaks = []  # invalidate cache
+        self._r_peaks_threshold = None
 
     def get_stats(self):
         if not self._samples:
@@ -24,7 +26,8 @@ class ECGProcessor:
                 "min": round(min(self._samples), 4), "max": round(max(self._samples), 4)}
 
     def detect_r_peaks(self, threshold=0.3):
-        if self._r_peaks:
+        # The cached peaks are only valid for the threshold they were found with.
+        if self._r_peaks and self._r_peaks_threshold == threshold:
             return self._r_peaks
         peaks = []
         s = self._samples
@@ -35,6 +38,7 @@ class ECGProcessor:
                 if not peaks or (i - peaks[-1]) > refractory:
                     peaks.append(i)
         self._r_peaks = peaks
+        self._r_peaks_threshold = threshold
         return peaks
 
     def compute_heart_rate(self):
@@ -83,3 +87,4 @@ class ECGProcessor:
     def clear(self):
         self._samples = []
         self._r_peaks = []
+        self._r_peaks_threshold = None
