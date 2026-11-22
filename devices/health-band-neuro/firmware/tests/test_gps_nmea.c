@@ -76,6 +76,39 @@ void test_gprmc_invalid_status_returns_invalid(void)
     }
 }
 
+void test_gprmc_void_status_clears_previous_fix(void)
+{
+    /* A receiver that loses its fix sends RMC with status V. The fix taken
+     * from the earlier status-A sentence must not stay valid. */
+    const char *fix_a =
+        "$GPRMC,123519,A,3746.4940,N,12225.1640,W,10.0,45.0,010126,,,A*61";
+    const char *lost =
+        "$GPRMC,123520,V,,,,,,,010126,,,N*50";
+    gps_fix_t fix;
+    memset(&fix, 0, sizeof(fix));
+
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(fix_a, &fix));
+    TEST_ASSERT_TRUE(fix.fix_valid);
+
+    /* Checksum is right, so this reaches the RMC parser. */
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(lost, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+}
+
+void test_gnrmc_void_status_clears_previous_fix(void)
+{
+    const char *fix_a =
+        "$GPRMC,123519,A,3746.4940,N,12225.1640,W,10.0,45.0,010126,,,A*61";
+    const char *lost =
+        "$GNRMC,123520,V,,,,,,,010126,,,N*4E";
+    gps_fix_t fix;
+    memset(&fix, 0, sizeof(fix));
+
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(fix_a, &fix));
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(lost, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+}
+
 /* ─── Test: null pointer handling ────────────────────────────────────────── */
 
 void test_null_sentence_returns_invalid(void)
@@ -126,6 +159,8 @@ int main(void)
     RUN_TEST(test_gpgga_no_fix_returns_invalid_fix);
     RUN_TEST(test_gprmc_valid_speed_heading);
     RUN_TEST(test_gprmc_invalid_status_returns_invalid);
+    RUN_TEST(test_gprmc_void_status_clears_previous_fix);
+    RUN_TEST(test_gnrmc_void_status_clears_previous_fix);
     RUN_TEST(test_null_sentence_returns_invalid);
     RUN_TEST(test_null_output_returns_invalid);
     RUN_TEST(test_bad_checksum_returns_error);

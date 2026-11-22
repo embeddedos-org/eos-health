@@ -106,7 +106,12 @@ static bool parse_gprmc(const char *sentence, gps_fix_t *out)
     const char *speed    = nmea_field(sentence, 7);
     const char *heading  = nmea_field(sentence, 8);
 
-    if (!status || status[0] != 'A') return false;
+    /* Status V (void) means the receiver has no fix: clear fix_valid, as
+     * parse_gpgga() does for fix quality 0, so an earlier fix is not kept. */
+    if (!status || status[0] != 'A') {
+        out->fix_valid = false;
+        return false;
+    }
 
     out->latitude    = nmea_coord_to_deg(lat_str,  lat_hemi ? lat_hemi[0] : 'N');
     out->longitude   = nmea_coord_to_deg(lon_str,  lon_hemi ? lon_hemi[0] : 'E');
