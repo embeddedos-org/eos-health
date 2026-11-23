@@ -146,8 +146,10 @@ static size_t detect_r_peaks(const int32_t *samples, size_t n,
     size_t last_r = 0;
 
     for (size_t i = PT_WINDOW_SAMPLES; i < n - 1 && peak_count < max_peaks; i++) {
-        /* Local maximum detection */
-        if (mwi[i] <= mwi[i-1] || mwi[i] <= mwi[i+1]) continue;
+        /* Local maximum detection. The top of an integrated QRS can hold the
+         * same value on consecutive samples; take the first sample of such a
+         * flat top, or the peak is never seen. */
+        if (mwi[i] <= mwi[i-1] || mwi[i] < mwi[i+1]) continue;
 
         float threshold1 = npki + 0.25f * (spki - npki);
 

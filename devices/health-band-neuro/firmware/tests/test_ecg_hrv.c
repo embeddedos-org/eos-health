@@ -158,6 +158,31 @@ void test_signal_quality_in_range(void)
     TEST_ASSERT_TRUE(hrv.quality >= 0 && hrv.quality <= 100);
 }
 
+/* ─── Test: a narrow QRS is still detected ──────────────────────────────── */
+
+void test_r_peak_found_in_narrow_qrs_ecg(void)
+{
+    /* Five clean beats at 500 Hz, one per second, each a Gaussian QRS with
+     * a 10 ms sigma. The integrated signal of such a beat peaks on two equal
+     * samples; the detector must still report a beat, within one 150 ms
+     * integration window after an R wave. */
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    for (int i = 0; i < N; i++) {
+        double v = 0.0;
+        for (int b = 0; b < 5; b++) {
+            double d = (i - (250 + 500 * b)) / 5.0;
+            v += 1000.0 * exp(-d * d / 2.0);
+        }
+        ecg[i] = (int32_t)lround(v);
+    }
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    TEST_ASSERT_TRUE(r >= 250);
+    TEST_ASSERT_TRUE((r - 250) % 500 < 75);
+}
+
 /* ─── Test runner ────────────────────────────────────────────────────────── */
 
 int main(void)
@@ -175,5 +200,6 @@ int main(void)
     RUN_TEST(test_lf_hf_ratio_non_negative);
     RUN_TEST(test_rr_oscillation_at_0p15hz_is_high_frequency);
     RUN_TEST(test_signal_quality_in_range);
+    RUN_TEST(test_r_peak_found_in_narrow_qrs_ecg);
     return UNITY_END();
 }
