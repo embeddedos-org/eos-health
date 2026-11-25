@@ -23,6 +23,18 @@ FAIL = 0
 WARN = 0
 
 
+# One left-to-right pass: whichever of a string literal, a char literal or a
+# // comment starts first on the line wins, so "file://", '"' and '(' are not
+# read as a comment start, a string start or a bracket.
+_CODE_TOKEN = re.compile(r'"(?:\\.|[^"\\])*"' r"|'(?:\\.[^']*|[^'\\])'" r'|//.*$')
+
+
+def strip_code_line(line: str) -> str:
+    """Return one line of C with string/char literals emptied and // comments removed."""
+    return _CODE_TOKEN.sub(
+        lambda m: '' if m.group().startswith('//') else m.group()[0] * 2, line)
+
+
 def check_file(filepath: Path) -> list[dict]:
     issues = []
     try:
@@ -37,8 +49,7 @@ def check_file(filepath: Path) -> list[dict]:
     brace_count = 0
     for i, line in enumerate(lines, 1):
         # Skip comments and strings for brace counting
-        stripped = re.sub(r'//.*$', '', line)
-        stripped = re.sub(r'"[^"]*"', '""', stripped)
+        stripped = strip_code_line(line)
         brace_count += stripped.count('{') - stripped.count('}')
     if brace_count != 0:
         issues.append({"level": "ERROR", "file": str(filepath.name), "line": len(lines),
@@ -47,8 +58,7 @@ def check_file(filepath: Path) -> list[dict]:
     # 2. Balanced parentheses
     paren_count = 0
     for i, line in enumerate(lines, 1):
-        stripped = re.sub(r'//.*$', '', line)
-        stripped = re.sub(r'"[^"]*"', '""', stripped)
+        stripped = strip_code_line(line)
         paren_count += stripped.count('(') - stripped.count(')')
     if paren_count != 0:
         issues.append({"level": "ERROR", "file": str(filepath.name), "line": len(lines),
