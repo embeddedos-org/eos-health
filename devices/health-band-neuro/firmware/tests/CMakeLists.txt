@@ -16,7 +16,17 @@ add_library(unity STATIC unity/unity.c)
 target_include_directories(unity PUBLIC unity)
 
 # Test sources — compile firmware modules for host
-set(FW_ROOT ${CMAKE_SOURCE_DIR}/..)
+#
+# CMAKE_SOURCE_DIR is the *top-level* source directory, not this one. It only
+# resolved correctly when this directory was configured standalone; when the
+# parent firmware/CMakeLists.txt added it via add_subdirectory(tests),
+# CMAKE_SOURCE_DIR became devices/health-band-neuro/firmware and FW_ROOT
+# silently pointed one level too high, at devices/health-band-neuro, so every
+# source resolved to a path that does not exist:
+#   Cannot find source file: devices/health-band-neuro/src/eeg/eeg_filter.c
+# CMAKE_CURRENT_SOURCE_DIR is always this directory, so FW_ROOT is correct
+# both standalone and as a subdirectory.
+set(FW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 add_executable(test_eeg_filter
     test_eeg_filter.c
