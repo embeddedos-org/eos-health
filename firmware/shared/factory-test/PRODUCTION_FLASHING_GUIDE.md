@@ -152,7 +152,7 @@ python3 tools/eos-provision.py \
 
 ```json
 {
-  "magic": "0xEA5P0001",
+  "magic": "0xEA500001",
   "device_type": 3,
   "hw_revision": 0,
   "serial_number": "EHR-2026-000001",

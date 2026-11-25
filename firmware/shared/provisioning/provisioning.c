@@ -46,7 +46,10 @@
 LOG_MODULE_REGISTER(provisioning, LOG_LEVEL_INF);
 
 #define PROV_PARTITION_ID   FIXED_PARTITION_ID(provisioning_partition)
-#define PROV_MAGIC          0xEA5P0001U
+/* 0xEA50 is the EoS namespace prefix used throughout this firmware — see the
+ * EoS Custom Service UUIDs in shared/ble-stack/ble_manager.c, which are
+ * 0xEA500001..0xEA500008. 0001 is the provisioning record version. */
+#define PROV_MAGIC          0xEA500001U
 #define PROV_DATA_SIZE      0xB4U  /* 180 bytes of provisioning data */
 
 static prov_data_t prov_cache;
