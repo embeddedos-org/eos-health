@@ -1,0 +1,136 @@
+name: CI — eos-health
+
+on:
+  push:
+    branches: [master, main, develop]
+    tags: ["v*"]
+  pull_request:
+    branches: [master, main]
+
+# Matches the convention in the sibling repos' ci.yml. cancel-in-progress
+# because a superseded commit's result is not wanted, but never on the
+# default branch: cancelling main's runs on every merge is how a hanging or
+# failing test stays invisible.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  # ── Host unit tests ───────────────────────────────────────────────────────
+  # Every tree here is a host build: plain gcc, no MCU toolchain, no vendor
+  # SDK. That is what makes them runnable on a stock runner.
+  #
+  # fail-fast: false so one broken tree does not hide the state of the others.
+  host-tests:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: health-band-neuro (devices tree)
+            source: devices/health-band-neuro/firmware
+            expected_tests: 4
+          - name: health-band-neuro (firmware tree)
+            source: firmware/health-band-neuro/tests
+            expected_tests: 2
+          - name: shared firmware constants
+            source: firmware/shared/tests
+            expected_tests: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build gcc g++
+
+      - name: Configure
+        run: |
+          cmake -S ${{ matrix.source }} -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Run unit tests
+        run: |
+          # --no-tests=error: ctest exits 0 when it finds no tests at all.
+          # devices/health-band-neuro/firmware/tests was missing
+          # enable_testing() and ctest reported "No tests were found!!!" while
+          # exiting successfully, so the suites looked fine having run none.
+          # --timeout 120: a hung test must become a named failure, not a job
+          # that holds a runner open until it is cancelled.
+          ctest --test-dir build \
+            --output-on-failure \
+            --no-tests=error \
+            --timeout 120 \
+            --parallel $(nproc)
+
+      - name: Assert the expected number of tests ran
+        run: |
+          # --no-tests=error only catches the zero case. These trees skip
+          # targets whose sources are absent (see #2), so a suite silently
+          # dropping to a smaller set would otherwise still pass. Pin the
+          # count; raise it deliberately when tests are added.
+          actual=$(ctest --test-dir build -N | awk '/Total Tests:/ {print $3}')
+          echo "ctest reports $actual test(s), expected ${{ matrix.expected_tests }}"
+          if [ "$actual" != "${{ matrix.expected_tests }}" ]; then
+            echo "::error::expected ${{ matrix.expected_tests }} tests, found $actual"
+            exit 1
+          fi
+
+      - name: Assert the build did not touch the working tree
+        run: |
+          # Eight stale compiled Unity binaries are tracked in this repo (#30).
+          # Every build above is out-of-source into build/, so nothing here
+          # executes or regenerates them -- this job would pass identically if
+          # they were deleted. This step fails if a build ever starts writing
+          # artifacts back into the tree.
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::build modified tracked files:"
+            git status --porcelain
+            exit 1
+          fi
+
+  # ── Firmware ELF ──────────────────────────────────────────────────────────
+  # Not built, and deliberately not silently skipped. 18 of the 22 sources
+  # listed in devices/health-band-neuro/firmware/CMakeLists.txt, plus the
+  # linker script, were never committed (#2). This job asserts that the tree
+  # still refuses to pretend otherwise, so the gap stays visible and cannot be
+  # closed by stubbing empty files.
+  firmware-elf-gap:
+    name: Firmware ELF (reports missing sources)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Requesting the ELF must fail with the missing sources named
+        run: |
+          # Inverted check: a zero exit here means the missing sources were
+          # quietly supplied or the guard was removed, both of which need a
+          # human to look. Failure is the expected state until the drivers
+          # are written.
+          if cmake -S devices/health-band-neuro/firmware -B build-elf \
+               -DEOS_BUILD_FIRMWARE_ELF=ON > elf.log 2>&1; then
+            echo "::error::EOS_BUILD_FIRMWARE_ELF=ON configured successfully."
+            echo "If the missing firmware sources were added, build the ELF here and update this job."
+            cat elf.log
+            exit 1
+          fi
+          grep -q "required files do not exist" elf.log
+          echo "ELF correctly refuses to configure; missing files reported:"
+          cat elf.log
