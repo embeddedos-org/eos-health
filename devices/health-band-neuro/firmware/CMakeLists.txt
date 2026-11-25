@@ -61,7 +61,60 @@ include_directories(
     third_party/nrf52_hal/include
 )
 
+# ─── Which of the declared sources actually exist ─────────────────────────────
+# 18 of the 22 files listed above, and the linker script referenced below, are
+# not present anywhere in this repository. Only the four DSP modules that the
+# host test suite covers (eeg_filter, semg_gesture, ecg_hrv, gps_nmea) exist.
+# The drivers, BLE services, power/storage/IMU layers and src/main.c were
+# never written.
+#
+# Previously this produced a hard configure failure --
+#   CMake Error: Cannot find source file: src/main.c
+#   CMake Error: No SOURCES given to target: health_band_neuro.elf
+# -- which also prevented add_subdirectory(tests) at the bottom of this file
+# from ever being reached, so the four working host suites could not be
+# configured or run through this tree at all.
+#
+# The target is deliberately NOT deleted and the source list is deliberately
+# left complete: it is the record of what this firmware is meant to contain.
+# Nothing here is stubbed. The missing files are reported by name, and asking
+# for the ELF explicitly (-DEOS_BUILD_FIRMWARE_ELF=ON) is a hard error that
+# lists them, so this cannot be mistaken for a firmware that builds.
+option(EOS_BUILD_FIRMWARE_ELF
+       "Build the nRF52840 firmware ELF (requires the sources that are still missing)"
+       OFF)
+
+set(MISSING_FIRMWARE_SOURCES "")
+foreach(src IN LISTS FIRMWARE_SOURCES)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+        list(APPEND MISSING_FIRMWARE_SOURCES ${src})
+    endif()
+endforeach()
+
+set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linker/nrf52840_health_band.ld")
+if(NOT EXISTS ${LINKER_SCRIPT})
+    list(APPEND MISSING_FIRMWARE_SOURCES "linker/nrf52840_health_band.ld")
+endif()
+
+if(MISSING_FIRMWARE_SOURCES)
+    list(LENGTH MISSING_FIRMWARE_SOURCES N_MISSING)
+    string(REPLACE ";" "\n    " MISSING_PRETTY "${MISSING_FIRMWARE_SOURCES}")
+    if(EOS_BUILD_FIRMWARE_ELF)
+        message(FATAL_ERROR
+            "EOS_BUILD_FIRMWARE_ELF=ON but ${N_MISSING} required files do not "
+            "exist in this repository:\n    ${MISSING_PRETTY}\n"
+            "These were never committed. They cannot be stubbed -- the ELF "
+            "needs the real drivers.")
+    endif()
+    message(WARNING
+        "health_band_neuro.elf is NOT configured: ${N_MISSING} of its required "
+        "files do not exist in this repository:\n    ${MISSING_PRETTY}\n"
+        "Host unit tests below are unaffected and will still be built and run. "
+        "Re-run with -DEOS_BUILD_FIRMWARE_ELF=ON to turn this into a hard error.")
+endif()
+
 # ─── Main firmware binary ─────────────────────────────────────────────────────
+if(NOT MISSING_FIRMWARE_SOURCES)
 add_executable(health_band_neuro.elf ${FIRMWARE_SOURCES})
 
 target_compile_definitions(health_band_neuro.elf PRIVATE
@@ -80,7 +133,6 @@ target_compile_definitions(health_band_neuro.elf PRIVATE
 )
 
 # ─── Linker ───────────────────────────────────────────────────────────────────
-set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/linker/nrf52840_health_band.ld")
 target_link_options(health_band_neuro.elf PRIVATE
     -T${LINKER_SCRIPT}
     -Wl,--gc-sections
@@ -97,7 +149,10 @@ add_custom_command(TARGET health_band_neuro.elf POST_BUILD
     COMMAND ${CMAKE_SIZE}    health_band_neuro.elf
     COMMENT "Generating health_band_neuro.bin and .hex"
 )
+endif()  # NOT MISSING_FIRMWARE_SOURCES
 
 # ─── Unit tests (host build, no MCU required) ─────────────────────────────────
+# Reached unconditionally: these suites are host builds and do not depend on
+# the MCU target above.
 enable_testing()
 add_subdirectory(tests)
