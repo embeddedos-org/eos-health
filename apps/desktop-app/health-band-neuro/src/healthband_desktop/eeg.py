@@ -27,10 +27,14 @@ class EEGProcessor:
         # Simple DFT-based band power estimation
         n = len(samples)
         low, high = self.BANDS[band]
+        # Adjacent bands share an edge (4, 8, 13, 30 Hz). Each band is [low, high)
+        # so a bin on a shared edge is counted once, in the upper band; the top
+        # band keeps its upper edge, which no other band claims.
+        top = high == max(h for _, h in self.BANDS.values())
         power = 0.0
         for k in range(1, n // 2):
             freq = k * self.SAMPLE_RATE / n
-            if low <= freq <= high:
+            if low <= freq < high or (top and freq == high):
                 re = sum(samples[t] * math.cos(2*math.pi*k*t/n) for t in range(n)) / n
                 im = sum(samples[t] * math.sin(2*math.pi*k*t/n) for t in range(n)) / n
                 power += re**2 + im**2
