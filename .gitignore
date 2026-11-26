@@ -68,3 +68,11 @@ temp/
 *.tmp
 *.bak
 *.orig
+
+# Compiled host test executables. The Unity suites build next to their
+# sources, so the binaries land in the same tests/ directory as the .c files
+# and have no extension for *.elf / *.o above to catch.
+firmware/**/tests/test_*
+devices/**/firmware/tests/test_*
+!**/tests/test_*.c
+!**/tests/test_*.h
