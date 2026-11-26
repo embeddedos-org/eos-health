@@ -132,7 +132,10 @@ def add_mcuboot_header(binary_path: Path, version: str, slot_size: int) -> Path:
     build_num = int(time.time()) & 0xFFFFFFFF
 
     # MCUboot IMAGE_MAGIC header (simplified — real builds use imgtool)
-    header = struct.pack("<IIIHHBBBBI",
+    # struct image_header: magic u32, load_addr u32, hdr_size u16,
+    # protect_tlv_size u16, img_size u32, flags u32, then struct image_version
+    # (major u8, minor u8, revision u16, build_num u32).
+    header = struct.pack("<IIHHIIBBHI",
         MCUBOOT_MAGIC,   # magic
         0,               # load_addr (0 = no load addr)
         IMG_HDR_SIZE,    # hdr_size
@@ -140,7 +143,7 @@ def add_mcuboot_header(binary_path: Path, version: str, slot_size: int) -> Path:
         len(firmware),   # img_size
         0,               # flags
         major, minor,    # ver.major, ver.minor
-        patch,           # ver.revision (uint16 packed as byte here)
+        patch,           # ver.revision
         build_num,       # ver.build_num
     )
     # Pad header to IMG_HDR_SIZE
