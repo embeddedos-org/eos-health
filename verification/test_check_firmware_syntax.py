@@ -48,6 +48,21 @@ class BalanceCountTest(unittest.TestCase):
         src = 'void f(void)\n{\n    g(\'"\'); h("(");\n}\n'
         self.assertEqual(errors_for(src), [])
 
+    def test_multi_character_constant_with_bracket_is_not_counted(self):
+        # Firmware magic numbers are often multi-character constants.
+        src = "void f(void)\n{\n    uint32_t m = '(BC';\n}\n"
+        self.assertEqual(errors_for(src), [])
+
+    def test_string_continued_with_backslash_newline(self):
+        # The literal spans two physical lines; the ')' belongs to it, not to code.
+        src = 'void f(void)\n{\n    print("a\\\n)b");\n}\n'
+        self.assertEqual(errors_for(src), [])
+
+    def test_imbalance_after_a_continued_string_is_still_reported(self):
+        # Joining lines must not swallow a genuine unbalanced bracket.
+        src = 'void f(void)\n{\n    print("a\\\nb"); g((;\n}\n'
+        self.assertTrue(any('parenthes' in m for m in errors_for(src)))
+
     def test_real_imbalance_is_still_reported(self):
         src = 'void f(void)\n{\n    g((1);\n}\n'
         self.assertEqual(errors_for(src), ["Unbalanced parentheses: net count = +1"])
