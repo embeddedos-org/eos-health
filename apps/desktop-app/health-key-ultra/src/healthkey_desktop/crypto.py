@@ -42,9 +42,12 @@ class CryptoEngine:
         return str(code % 1000000).zfill(6)
 
     def verify_totp_code(self, secret, code, window=1):
+        # An int drops the leading zeros a 6-digit code can have (026920 -> 26920);
+        # put them back. A str is compared exactly as given.
+        code = f"{code:06d}" if isinstance(code, int) else str(code)
         now = int(time.time())
         for delta in range(-window, window + 1):
             expected = self.generate_totp_code(secret, now + delta * 30)
-            if hmac.compare_digest(expected, str(code)):
+            if hmac.compare_digest(expected, code):
                 return True
         return False
