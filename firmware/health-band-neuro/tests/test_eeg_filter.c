@@ -101,8 +101,9 @@ void test_alpha_sine_dominates_alpha_band(void)
     hbn_result_t r = eeg_compute_band_power(buf, N_SAMPLES, &out);
     TEST_ASSERT_EQUAL(HBN_OK, r);
 
-    /* After warmup, alpha power must be non-zero and positive */
-    TEST_ASSERT_TRUE(out.alpha >= 0.0f);
+    /* After warmup, alpha power must be strictly positive: an all-zero
+     * band-power result would otherwise satisfy every comparison below. */
+    TEST_ASSERT_TRUE(out.alpha > 0.0f);
     TEST_ASSERT_TRUE(out.delta >= 0.0f);
     TEST_ASSERT_TRUE(out.beta  >= 0.0f);
     /* Alpha should be larger than gamma for a 10 Hz signal */
