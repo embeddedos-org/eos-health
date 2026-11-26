@@ -17,6 +17,7 @@
 
 #include "health_band.h"
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ─── Pan-Tompkins constants (fs = 500 Hz) ───────────────────────────────── */
@@ -146,8 +147,22 @@ static size_t detect_r_peaks(const int32_t *samples, size_t n,
     size_t last_r = 0;
 
     for (size_t i = PT_WINDOW_SAMPLES; i < n - 1 && peak_count < max_peaks; i++) {
-        /* Local maximum detection */
-        if (mwi[i] <= mwi[i-1] || mwi[i] <= mwi[i+1]) continue;
+        /* Local maximum detection. The top of an integrated QRS can hold the
+         * same value on consecutive samples; take the first sample of such a
+         * flat top, or the peak is never seen.
+         *
+         * A flat top only counts once the plateau is known to come back down.
+         * A shelf on a rising edge -- equal samples that then keep climbing --
+         * is not a maximum, and accepting it would report a beat one
+         * refractory period before the real one. */
+        if (mwi[i] <= mwi[i-1]) continue;
+        if (mwi[i] < mwi[i+1]) continue;
+        if (mwi[i] == mwi[i+1]) {
+            size_t j = i + 1;
+            while (j + 1 < n && mwi[j+1] == mwi[i]) j++;
+            /* Plateau runs to the end of the signal, or climbs afterwards. */
+            if (j + 1 >= n || mwi[j+1] > mwi[i]) continue;
+        }
 
         float threshold1 = npki + 0.25f * (spki - npki);
 
@@ -285,15 +300,45 @@ bool ecg_detect_r_peak(const int32_t *samples, size_t n, uint32_t *r_idx)
     size_t count = detect_r_peaks(samples, n, peaks, 64);
     if (count == 0) return false;
 
-    /* Return the highest-amplitude peak */
-    size_t best = 0;
-    int32_t best_val = 0;
+    /* Return the largest-deflection beat, reported at the R wave itself.
+     *
+     * detect_r_peaks() returns maxima of the moving-window integral, which
+     * trails the R wave by roughly the integration window: the integral of a
+     * QRS keeps climbing until the whole complex has entered the window. On
+     * a 10 ms-sigma beat at sample 250, the MWI maximum lands near 310, by
+     * which point the raw signal is back at baseline.
+     *
+     * samples[peaks[i]] was therefore not the R amplitude but a baseline
+     * sample, so every candidate compared equal and `best` never moved off
+     * its initial 0 -- the function silently degraded to "first beat found".
+     * Comparing signed values against a 0 seed hid the same thing a second
+     * way for a negative-polarity QRS, where no candidate can ever exceed 0.
+     *
+     * Walk back over one integration window from each MWI maximum, take the
+     * sample of largest magnitude as that beat's R wave, and select on it.
+     * Magnitude, not signed value, so a reversed lead reads the same.
+     *
+     * This stays inside ecg_detect_r_peak(). detect_r_peaks() still reports
+     * MWI indices, so RR intervals and every HRV metric are untouched: the
+     * lag is constant and cancels in the differences. */
+    int64_t best_mag = -1;
+    uint32_t best_idx = peaks[0];
+
     for (size_t i = 0; i < count; i++) {
-        if (samples[peaks[i]] > best_val) {
-            best_val = samples[peaks[i]];
-            best = i;
+        uint32_t hi = peaks[i];
+        uint32_t lo = (hi > PT_WINDOW_SAMPLES) ? hi - PT_WINDOW_SAMPLES : 0;
+        uint32_t arg = hi;
+        int64_t  mag = -1;
+        for (uint32_t j = lo; j <= hi; j++) {
+            int64_t m = llabs((int64_t)samples[j]);
+            if (m > mag) { mag = m; arg = j; }
+        }
+        if (mag > best_mag) {
+            best_mag = mag;
+            best_idx = arg;
         }
     }
-    *r_idx = peaks[best];
+
+    *r_idx = best_idx;
     return true;
 }

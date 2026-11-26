@@ -29,6 +29,19 @@ static void gen_sine_all_channels(int32_t *buf, float f_hz, float amp_uv)
     }
 }
 
+/* Pure sine on channel 0 only, other channels at 0. Identical channels are
+ * removed by the Common Average Reference, so the band-response tests below
+ * drive a single channel. */
+static void gen_sine_one_channel(int32_t *buf, float f_hz, float amp_uv)
+{
+    float scale = amp_uv / 0.011921f;
+    memset(buf, 0, sizeof(int32_t) * N_SAMPLES * HBN_EEG_CHANNELS);
+    for (int s = 0; s < N_SAMPLES; s++) {
+        buf[s * HBN_EEG_CHANNELS] =
+            (int32_t)(scale * sinf(2.0f * PI * f_hz * (float)s / FS));
+    }
+}
+
 void setUp(void) {}
 void tearDown(void) {}
 
@@ -78,7 +91,9 @@ void test_alpha_sine_dominates_alpha_band(void)
 {
     /* Run twice — first call warms up filter state, second gives stable output */
     int32_t buf[N_SAMPLES * HBN_EEG_CHANNELS];
-    gen_sine_all_channels(buf, 10.0f, 50.0f);  /* 10 Hz alpha, 50 µV */
+    /* One channel: identical channels cancel in the CAR and leave only
+     * rounding residue for the bands to compare */
+    gen_sine_one_channel(buf, 10.0f, 50.0f);  /* 10 Hz alpha, 50 µV */
     eeg_band_power_t warmup;
     eeg_compute_band_power(buf, N_SAMPLES, &warmup);  /* Warmup pass */
 
@@ -86,8 +101,9 @@ void test_alpha_sine_dominates_alpha_band(void)
     hbn_result_t r = eeg_compute_band_power(buf, N_SAMPLES, &out);
     TEST_ASSERT_EQUAL(HBN_OK, r);
 
-    /* After warmup, alpha power must be non-zero and positive */
-    TEST_ASSERT_TRUE(out.alpha >= 0.0f);
+    /* After warmup, alpha power must be strictly positive: an all-zero
+     * band-power result would otherwise satisfy every comparison below. */
+    TEST_ASSERT_TRUE(out.alpha > 0.0f);
     TEST_ASSERT_TRUE(out.delta >= 0.0f);
     TEST_ASSERT_TRUE(out.beta  >= 0.0f);
     /* Alpha should be larger than gamma for a 10 Hz signal */

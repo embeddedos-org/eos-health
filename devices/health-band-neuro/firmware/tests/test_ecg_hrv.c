@@ -158,6 +158,110 @@ void test_signal_quality_in_range(void)
     TEST_ASSERT_TRUE(hrv.quality >= 0 && hrv.quality <= 100);
 }
 
+/* ─── Test: a narrow QRS is still detected ──────────────────────────────── */
+
+void test_r_peak_found_in_narrow_qrs_ecg(void)
+{
+    /* Five clean beats at 500 Hz, one per second, each a Gaussian QRS with
+     * a 10 ms sigma. The integrated signal of such a beat peaks on two equal
+     * samples; the detector must still report a beat, within one 150 ms
+     * integration window after an R wave. */
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    for (int i = 0; i < N; i++) {
+        double v = 0.0;
+        for (int b = 0; b < 5; b++) {
+            double d = (i - (250 + 500 * b)) / 5.0;
+            v += 1000.0 * exp(-d * d / 2.0);
+        }
+        ecg[i] = (int32_t)lround(v);
+    }
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    TEST_ASSERT_TRUE(r >= 250);
+    TEST_ASSERT_TRUE((r - 250) % 500 < 75);
+}
+
+/* ─── Test: a shelf on a rising edge does not become the reported beat ──── */
+
+void test_rising_shelf_does_not_shift_the_reported_r_peak(void)
+{
+    /* One beat per second at 500 Hz. Each QRS climbs through a deliberate
+     * shelf -- a run of equal samples partway up the rising edge -- before
+     * reaching its real summit 300 ms later, well past the 200 ms refractory
+     * period.
+     *
+     * Characterisation, not a regression guard: ecg_detect_r_peak() returns
+     * the highest-amplitude peak, so it reports the summit whether or not
+     * detect_r_peaks() also recorded the shelf behind it. detect_r_peaks()
+     * is static and its peak count is not observable from this side of the
+     * API, so the plateau rule it uses is argued in the source comment.
+     * What this pins is the public contract: a shelved QRS reports its
+     * summit. */
+    enum { N = 2500, FS = 500, PERIOD = 500, SHELF = 100, SUMMIT = 250 };
+    static int32_t ecg[N];
+    for (int i = 0; i < N; i++) {
+        int phase = i % PERIOD;
+        int32_t v;
+        if (phase < SHELF)                 v = 4 * phase;
+        else if (phase < SHELF + 40)       v = 4 * SHELF;        /* the shelf */
+        else if (phase <= SUMMIT)          v = 4 * (phase - 40);
+        else                               v = 0;
+        ecg[i] = v;
+    }
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+
+    /* The summit of some beat, not the shelf 150 samples (300 ms) before it. */
+    uint32_t phase = r % PERIOD;
+    TEST_ASSERT_TRUE(phase > SHELF + 40);
+}
+
+/* ─── Test: selection works at either QRS polarity ─────────────────────── */
+
+/* Five Gaussian beats at 500 Hz, one per second. Beat 3 is the tallest, so
+ * the largest-deflection peak is the one at sample 1750 regardless of sign. */
+static void gen_graded_beats(int32_t *ecg, int n, int sign)
+{
+    static const double amp[5] = { 1000.0, 1000.0, 1000.0, 2500.0, 1000.0 };
+    for (int i = 0; i < n; i++) {
+        double v = 0.0;
+        for (int b = 0; b < 5; b++) {
+            double d = (i - (250 + 500 * b)) / 5.0;
+            v += amp[b] * exp(-d * d / 2.0);
+        }
+        ecg[i] = (int32_t)lround(sign * v);
+    }
+}
+
+void test_tallest_beat_is_selected_at_positive_polarity(void)
+{
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    gen_graded_beats(ecg, N, +1);
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    /* Beat 3 sits at sample 1750; allow one integration window of lag. */
+    TEST_ASSERT_TRUE(r >= 1750 && r < 1750 + 75);
+}
+
+void test_tallest_beat_is_selected_at_negative_polarity(void)
+{
+    /* Same record, reversed lead polarity. Every detected peak now has a
+     * nonpositive raw sample. Selection must still land on beat 3, not fall
+     * back to the first beat found. */
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    gen_graded_beats(ecg, N, -1);
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    TEST_ASSERT_TRUE(r >= 1750 && r < 1750 + 75);
+}
+
 /* ─── Test runner ────────────────────────────────────────────────────────── */
 
 int main(void)
@@ -175,5 +279,9 @@ int main(void)
     RUN_TEST(test_lf_hf_ratio_non_negative);
     RUN_TEST(test_rr_oscillation_at_0p15hz_is_high_frequency);
     RUN_TEST(test_signal_quality_in_range);
+    RUN_TEST(test_r_peak_found_in_narrow_qrs_ecg);
+    RUN_TEST(test_rising_shelf_does_not_shift_the_reported_r_peak);
+    RUN_TEST(test_tallest_beat_is_selected_at_positive_polarity);
+    RUN_TEST(test_tallest_beat_is_selected_at_negative_polarity);
     return UNITY_END();
 }
