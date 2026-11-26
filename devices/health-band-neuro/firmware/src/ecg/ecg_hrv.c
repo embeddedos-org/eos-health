@@ -146,8 +146,22 @@ static size_t detect_r_peaks(const int32_t *samples, size_t n,
     size_t last_r = 0;
 
     for (size_t i = PT_WINDOW_SAMPLES; i < n - 1 && peak_count < max_peaks; i++) {
-        /* Local maximum detection */
-        if (mwi[i] <= mwi[i-1] || mwi[i] <= mwi[i+1]) continue;
+        /* Local maximum detection. The top of an integrated QRS can hold the
+         * same value on consecutive samples; take the first sample of such a
+         * flat top, or the peak is never seen.
+         *
+         * A flat top only counts once the plateau is known to come back down.
+         * A shelf on a rising edge -- equal samples that then keep climbing --
+         * is not a maximum, and accepting it would report a beat one
+         * refractory period before the real one. */
+        if (mwi[i] <= mwi[i-1]) continue;
+        if (mwi[i] < mwi[i+1]) continue;
+        if (mwi[i] == mwi[i+1]) {
+            size_t j = i + 1;
+            while (j + 1 < n && mwi[j+1] == mwi[i]) j++;
+            /* Plateau runs to the end of the signal, or climbs afterwards. */
+            if (j + 1 >= n || mwi[j+1] > mwi[i]) continue;
+        }
 
         float threshold1 = npki + 0.25f * (spki - npki);
 
