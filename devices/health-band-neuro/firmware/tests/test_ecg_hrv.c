@@ -219,6 +219,49 @@ void test_rising_shelf_does_not_shift_the_reported_r_peak(void)
     TEST_ASSERT_TRUE(phase > SHELF + 40);
 }
 
+/* ─── Test: selection works at either QRS polarity ─────────────────────── */
+
+/* Five Gaussian beats at 500 Hz, one per second. Beat 3 is the tallest, so
+ * the largest-deflection peak is the one at sample 1750 regardless of sign. */
+static void gen_graded_beats(int32_t *ecg, int n, int sign)
+{
+    static const double amp[5] = { 1000.0, 1000.0, 1000.0, 2500.0, 1000.0 };
+    for (int i = 0; i < n; i++) {
+        double v = 0.0;
+        for (int b = 0; b < 5; b++) {
+            double d = (i - (250 + 500 * b)) / 5.0;
+            v += amp[b] * exp(-d * d / 2.0);
+        }
+        ecg[i] = (int32_t)lround(sign * v);
+    }
+}
+
+void test_tallest_beat_is_selected_at_positive_polarity(void)
+{
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    gen_graded_beats(ecg, N, +1);
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    /* Beat 3 sits at sample 1750; allow one integration window of lag. */
+    TEST_ASSERT_TRUE(r >= 1750 && r < 1750 + 75);
+}
+
+void test_tallest_beat_is_selected_at_negative_polarity(void)
+{
+    /* Same record, reversed lead polarity. Every detected peak now has a
+     * nonpositive raw sample. Selection must still land on beat 3, not fall
+     * back to the first beat found. */
+    enum { N = 2500 };
+    static int32_t ecg[N];
+    gen_graded_beats(ecg, N, -1);
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+    TEST_ASSERT_TRUE(r >= 1750 && r < 1750 + 75);
+}
+
 /* ─── Test runner ────────────────────────────────────────────────────────── */
 
 int main(void)
@@ -238,5 +281,7 @@ int main(void)
     RUN_TEST(test_signal_quality_in_range);
     RUN_TEST(test_r_peak_found_in_narrow_qrs_ecg);
     RUN_TEST(test_rising_shelf_does_not_shift_the_reported_r_peak);
+    RUN_TEST(test_tallest_beat_is_selected_at_positive_polarity);
+    RUN_TEST(test_tallest_beat_is_selected_at_negative_polarity);
     return UNITY_END();
 }
