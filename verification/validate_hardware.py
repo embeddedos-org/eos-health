@@ -113,7 +113,9 @@ def validate_kicad_schematic(device_dir: Path, device_name: str):
                     "MCU symbol found" if has_mcu else "No MCU symbol found")
 
         # Check for decoupling capacitors
-        has_decoupling = text.count('100nF') + text.count('0.1uF') + text.count('100n')
+        # One match per value. Counting '100n' separately also counted every
+        # '100nF' a second time, and matched inside text such as '1100nm'.
+        has_decoupling = len(re.findall(r'\b(?:100nF?|0\.1uF)\b', text))
         check_issue("PASS" if has_decoupling >= 3 else "WARN", device_name, "SCH-DECOUPLING",
                     f"{has_decoupling} decoupling capacitors found" if has_decoupling >= 3
                     else f"Only {has_decoupling} decoupling caps — need ≥3 per power domain")
