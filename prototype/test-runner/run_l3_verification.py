@@ -264,7 +264,9 @@ def main():
     parser.add_argument("--sim", action="store_true", default=True,
                         help="Run in HIL simulation mode (default)")
     parser.add_argument("--device", type=str, help="BLE device address for real hardware")
-    parser.add_argument("--suite", type=str, choices=list(SUITES.keys()) + ["all"],
+    # "ble" and "reliability" are the HIL checks run below, not script suites.
+    parser.add_argument("--suite", type=str,
+                        choices=list(SUITES.keys()) + ["ble", "reliability", "all"],
                         default="all", help="Which suite to run")
     parser.add_argument("--report", action="store_true", help="Generate report only")
     args = parser.parse_args()
@@ -279,7 +281,8 @@ def main():
     all_passed = True
 
     # Run Python-based suites
-    suites_to_run = SUITES if args.suite == "all" else {args.suite: SUITES[args.suite]}
+    suites_to_run = SUITES if args.suite == "all" else {
+        k: v for k, v in SUITES.items() if k == args.suite}
 
     for suite_key, suite_config in suites_to_run.items():
         section(f"Suite: {suite_config['name']}")
