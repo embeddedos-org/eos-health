@@ -23,6 +23,72 @@ FAIL = 0
 WARN = 0
 
 
+# One left-to-right pass: whichever of a string literal, a char literal or a
+# // comment starts first on the line wins, so "file://", '"' and '(' are not
+# read as a comment start, a string start or a bracket.
+#
+# The char-literal branch takes one or more characters, so multi-character
+# constants such as 'ABCD' -- common as firmware magic numbers -- are consumed
+# whole. Taking only the first character would leave the rest, including any
+# bracket inside it, for the balance counters.
+_CODE_TOKEN = re.compile(r'"(?:\\.|[^"\\])*"' r"|'(?:\\.|[^'\\])+'" r'|//.*$')
+
+
+def strip_code_line(line: str) -> str:
+    """Return one line of C with string/char literals emptied and // comments removed.
+
+    Args:
+        line: One line of C source. Pass a logical line -- see join_continuations --
+            if the source uses backslash-newline, since a literal split across two
+            physical lines cannot be recognised on either of them alone.
+
+    Returns:
+        The line with every string and character literal replaced by its empty
+        form ('""' or "''") and any // comment removed. Brackets and quotes
+        inside literals and comments are gone, so the result is safe to count
+        braces and parentheses in. Nothing else is altered, so the result is
+        not valid C and is only meant for counting.
+
+    Example:
+        >>> strip_code_line('print("file://("); // a ) here')
+        'print(""); '
+    """
+    return _CODE_TOKEN.sub(
+        lambda m: '' if m.group().startswith('//') else m.group()[0] * 2, line)
+
+
+def join_continuations(lines: list[str]) -> list[str]:
+    """Merge backslash-newline continued physical lines into logical lines.
+
+    A C string literal may be continued with a trailing backslash. Split across
+    two physical lines, neither half has a matching quote, so strip_code_line
+    cannot recognise it and any bracket on the following line is counted as
+    code. Joining first keeps such a literal in one piece.
+
+    Args:
+        lines: Physical source lines, without line endings.
+
+    Returns:
+        Logical lines. A run of continued lines becomes one entry, so the
+        result may be shorter than the input.
+
+    Example:
+        >>> join_continuations(['print("a\\\\', 'b(");'])
+        ['print("ab(");']
+    """
+    joined = []
+    pending = None
+    for line in lines:
+        part = line[:-1] if line.endswith('\\') else line
+        pending = part if pending is None else pending + part
+        if not line.endswith('\\'):
+            joined.append(pending)
+            pending = None
+    if pending is not None:
+        joined.append(pending)
+    return joined
+
+
 def check_file(filepath: Path) -> list[dict]:
     issues = []
     try:
@@ -33,12 +99,15 @@ def check_file(filepath: Path) -> list[dict]:
 
     lines = text.splitlines()
 
+    # Balance counting runs on logical lines: a literal continued with
+    # backslash-newline is not recognisable on either physical half alone.
+    logical = join_continuations(lines)
+
     # 1. Balanced braces
     brace_count = 0
-    for i, line in enumerate(lines, 1):
+    for i, line in enumerate(logical, 1):
         # Skip comments and strings for brace counting
-        stripped = re.sub(r'//.*$', '', line)
-        stripped = re.sub(r'"[^"]*"', '""', stripped)
+        stripped = strip_code_line(line)
         brace_count += stripped.count('{') - stripped.count('}')
     if brace_count != 0:
         issues.append({"level": "ERROR", "file": str(filepath.name), "line": len(lines),
@@ -46,9 +115,8 @@ def check_file(filepath: Path) -> list[dict]:
 
     # 2. Balanced parentheses
     paren_count = 0
-    for i, line in enumerate(lines, 1):
-        stripped = re.sub(r'//.*$', '', line)
-        stripped = re.sub(r'"[^"]*"', '""', stripped)
+    for i, line in enumerate(logical, 1):
+        stripped = strip_code_line(line)
         paren_count += stripped.count('(') - stripped.count(')')
     if paren_count != 0:
         issues.append({"level": "ERROR", "file": str(filepath.name), "line": len(lines),
