@@ -114,7 +114,7 @@ if(MISSING_FIRMWARE_SOURCES)
 endif()
 
 # ─── Main firmware binary ─────────────────────────────────────────────────────
-if(NOT MISSING_FIRMWARE_SOURCES)
+if(NOT MISSING_FIRMWARE_SOURCES AND EOS_BUILD_FIRMWARE_ELF)
 add_executable(health_band_neuro.elf ${FIRMWARE_SOURCES})
 
 target_compile_definitions(health_band_neuro.elf PRIVATE
@@ -149,7 +149,7 @@ add_custom_command(TARGET health_band_neuro.elf POST_BUILD
     COMMAND ${CMAKE_SIZE}    health_band_neuro.elf
     COMMENT "Generating health_band_neuro.bin and .hex"
 )
-endif()  # NOT MISSING_FIRMWARE_SOURCES
+endif()  # NOT MISSING_FIRMWARE_SOURCES AND EOS_BUILD_FIRMWARE_ELF
 
 # ─── Unit tests (host build, no MCU required) ─────────────────────────────────
 # Reached unconditionally: these suites are host builds and do not depend on
