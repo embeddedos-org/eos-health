@@ -76,6 +76,73 @@ void test_gprmc_invalid_status_returns_invalid(void)
     }
 }
 
+void test_gprmc_void_status_clears_previous_fix(void)
+{
+    /* A receiver that loses its fix sends RMC with status V. The fix taken
+     * from the earlier status-A sentence must not stay valid. */
+    const char *fix_a =
+        "$GPRMC,123519,A,3746.4940,N,12225.1640,W,10.0,45.0,010126,,,A*61";
+    const char *lost =
+        "$GPRMC,123520,V,,,,,,,010126,,,N*50";
+    gps_fix_t fix;
+    memset(&fix, 0, sizeof(fix));
+
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(fix_a, &fix));
+    TEST_ASSERT_TRUE(fix.fix_valid);
+
+    /* Checksum is right, so this reaches the RMC parser. */
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(lost, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+}
+
+void test_gnrmc_void_status_clears_previous_fix(void)
+{
+    const char *fix_a =
+        "$GPRMC,123519,A,3746.4940,N,12225.1640,W,10.0,45.0,010126,,,A*61";
+    const char *lost =
+        "$GNRMC,123520,V,,,,,,,010126,,,N*4E";
+    gps_fix_t fix;
+    memset(&fix, 0, sizeof(fix));
+
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(fix_a, &fix));
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(lost, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+}
+
+void test_gprmc_absent_status_field_clears_fix_like_gpgga(void)
+{
+    /* A truncated RMC carries no status field. nmea_field() reports an
+     * absent field as "", never NULL, so this lands in the same branch as
+     * an explicit V and clears the fix.
+     *
+     * That is deliberate, and it matches GGA: parse_gpgga() reads an absent
+     * fix-quality field as atoi("") == 0 and clears fix_valid too. Both
+     * sentences fail safe -- a sentence that cannot confirm a fix does not
+     * let a stale one stand. The GGA half of this pair is asserted below so
+     * the two cannot drift apart. */
+    const char *fix_a =
+        "$GPRMC,123519,A,3746.4940,N,12225.1640,W,10.0,45.0,010126,,,A*61";
+    const char *rmc_no_status = "$GPRMC,123521*61";
+    const char *gga_full =
+        "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
+    const char *gga_no_quality = "$GPGGA,123520*7D";
+    gps_fix_t fix;
+
+    /* RMC: checksum is right, so this reaches the RMC parser. */
+    memset(&fix, 0, sizeof(fix));
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(fix_a, &fix));
+    TEST_ASSERT_TRUE(fix.fix_valid);
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(rmc_no_status, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+
+    /* GGA, same shape, same outcome. */
+    memset(&fix, 0, sizeof(fix));
+    TEST_ASSERT_EQUAL(HBN_OK, gps_parse_nmea(gga_full, &fix));
+    TEST_ASSERT_TRUE(fix.fix_valid);
+    TEST_ASSERT_EQUAL(HBN_ERR_INVALID, gps_parse_nmea(gga_no_quality, &fix));
+    TEST_ASSERT_FALSE(fix.fix_valid);
+}
+
 /* ─── Test: null pointer handling ────────────────────────────────────────── */
 
 void test_null_sentence_returns_invalid(void)
@@ -126,6 +193,9 @@ int main(void)
     RUN_TEST(test_gpgga_no_fix_returns_invalid_fix);
     RUN_TEST(test_gprmc_valid_speed_heading);
     RUN_TEST(test_gprmc_invalid_status_returns_invalid);
+    RUN_TEST(test_gprmc_void_status_clears_previous_fix);
+    RUN_TEST(test_gnrmc_void_status_clears_previous_fix);
+    RUN_TEST(test_gprmc_absent_status_field_clears_fix_like_gpgga);
     RUN_TEST(test_null_sentence_returns_invalid);
     RUN_TEST(test_null_output_returns_invalid);
     RUN_TEST(test_bad_checksum_returns_error);
