@@ -391,8 +391,10 @@ def step_final_qc(result: BringUpResult):
     """Step 8: Final QC and label generation."""
     section("Step 8: Final QC & Label")
 
-    result.add_step("All Steps Passed", True,
-                    f"Unit {result.serial_number} ready for shipment")
+    all_ok = all(s["passed"] for s in result.steps)
+    result.add_step("All Steps Passed", all_ok,
+                    f"Unit {result.serial_number} ready for shipment" if all_ok
+                    else f"Unit {result.serial_number} has failed steps")
 
     # Generate QR code data
     qr_data = {
