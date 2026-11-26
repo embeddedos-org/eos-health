@@ -183,6 +183,42 @@ void test_r_peak_found_in_narrow_qrs_ecg(void)
     TEST_ASSERT_TRUE((r - 250) % 500 < 75);
 }
 
+/* ─── Test: a shelf on a rising edge does not become the reported beat ──── */
+
+void test_rising_shelf_does_not_shift_the_reported_r_peak(void)
+{
+    /* One beat per second at 500 Hz. Each QRS climbs through a deliberate
+     * shelf -- a run of equal samples partway up the rising edge -- before
+     * reaching its real summit 300 ms later, well past the 200 ms refractory
+     * period.
+     *
+     * Characterisation, not a regression guard: ecg_detect_r_peak() returns
+     * the highest-amplitude peak, so it reports the summit whether or not
+     * detect_r_peaks() also recorded the shelf behind it. detect_r_peaks()
+     * is static and its peak count is not observable from this side of the
+     * API, so the plateau rule it uses is argued in the source comment.
+     * What this pins is the public contract: a shelved QRS reports its
+     * summit. */
+    enum { N = 2500, FS = 500, PERIOD = 500, SHELF = 100, SUMMIT = 250 };
+    static int32_t ecg[N];
+    for (int i = 0; i < N; i++) {
+        int phase = i % PERIOD;
+        int32_t v;
+        if (phase < SHELF)                 v = 4 * phase;
+        else if (phase < SHELF + 40)       v = 4 * SHELF;        /* the shelf */
+        else if (phase <= SUMMIT)          v = 4 * (phase - 40);
+        else                               v = 0;
+        ecg[i] = v;
+    }
+
+    uint32_t r = UINT32_MAX;
+    TEST_ASSERT_TRUE(ecg_detect_r_peak(ecg, N, &r));
+
+    /* The summit of some beat, not the shelf 150 samples (300 ms) before it. */
+    uint32_t phase = r % PERIOD;
+    TEST_ASSERT_TRUE(phase > SHELF + 40);
+}
+
 /* ─── Test runner ────────────────────────────────────────────────────────── */
 
 int main(void)
@@ -201,5 +237,6 @@ int main(void)
     RUN_TEST(test_rr_oscillation_at_0p15hz_is_high_frequency);
     RUN_TEST(test_signal_quality_in_range);
     RUN_TEST(test_r_peak_found_in_narrow_qrs_ecg);
+    RUN_TEST(test_rising_shelf_does_not_shift_the_reported_r_peak);
     return UNITY_END();
 }
