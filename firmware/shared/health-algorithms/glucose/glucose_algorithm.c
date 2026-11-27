@@ -137,7 +137,7 @@ static float temp_compensate(float value, float temp_c, float temp_coeff)
 /* ── Process new sensor readings ────────────────────────────── */
 void glucose_process_reading(const glucose_raw_t *raw)
 {
-    glu.uptime_s   += 5;  /* Called every 5 minutes */
+    glu.uptime_s   += 300;  /* Called every 5 minutes = 300 seconds */
     glu.skin_temp_c = raw->skin_temp_c;
     glu.warmed_up   = (glu.uptime_s >= GLUCOSE_WARMUP_S);
 
